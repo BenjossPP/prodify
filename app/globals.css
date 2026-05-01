@@ -1,26 +1,181 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-cal);
+  --font-mono: monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --background: oklch(0.07 0.01 265);
+  --foreground: oklch(0.97 0 0);
+  --card: oklch(0.1 0.01 265);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.1 0.01 265);
+  --popover-foreground: oklch(0.97 0 0);
+  --primary: oklch(0.65 0.22 290);
+  --primary-foreground: oklch(0.97 0 0);
+  --secondary: oklch(0.15 0.015 265);
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted: oklch(0.15 0.015 265);
+  --muted-foreground: oklch(0.6 0.02 265);
+  --accent: oklch(0.65 0.22 290);
+  --accent-foreground: oklch(0.97 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.2 0.015 265);
+  --input: oklch(0.15 0.015 265);
+  --ring: oklch(0.65 0.22 290);
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body {
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-cal), var(--font-inter), sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Orbes animées */
+@keyframes orb-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -60px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.95); }
 }
+@keyframes orb-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-50px, 40px) scale(1.05); }
+  66% { transform: translate(60px, -20px) scale(1.1); }
+}
+@keyframes orb-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, 50px) scale(0.9); }
+}
+
+.orb-1 { animation: orb-float-1 18s ease-in-out infinite; }
+.orb-2 { animation: orb-float-2 24s ease-in-out infinite; }
+.orb-3 { animation: orb-float-3 20s ease-in-out infinite; }
+
+/* Shimmer badge */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.65 0.22 290 / 0.3) 0%,
+    oklch(0.75 0.18 320 / 0.6) 50%,
+    oklch(0.65 0.22 290 / 0.3) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Glow pulse sur le CTA */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px oklch(0.65 0.22 290 / 0.4), 0 0 40px oklch(0.65 0.22 290 / 0.2); }
+  50% { box-shadow: 0 0 30px oklch(0.65 0.22 290 / 0.7), 0 0 60px oklch(0.65 0.22 290 / 0.35); }
+}
+.glow-btn { animation: glow-pulse 2.5s ease-in-out infinite; }
+
+/* Ticker */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-wrap {
+  overflow: hidden;
+  width: 100%;
+}
+.ticker-inner { animation: ticker 25s linear infinite; }
+.ticker-inner:hover { animation-play-state: paused; }
+
+/* Noise overlay */
+.noise::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Glassmorphism nav */
+.glass-nav {
+  background: oklch(0.07 0.01 265 / 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid oklch(1 0 0 / 0.06);
+}
+
+/* Card hover */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px oklch(0 0 0 / 0.4);
+  border-color: oklch(0.65 0.22 290 / 0.4);
+}
+
+/* Gradient text animé */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #f472b6, #818cf8, #a78bfa);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Scrollbar custom */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: oklch(0.07 0.01 265); }
+::-webkit-scrollbar-thumb { background: oklch(0.25 0.02 265); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.65 0.22 290 / 0.6); }
