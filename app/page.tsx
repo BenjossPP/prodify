@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from '@/components/animations'
@@ -7,9 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Zap, ArrowRight, CheckCircle, Star, Clock, TrendingUp,
-  Sparkles, Shield, Globe, ChevronDown
+  Sparkles, Shield, Globe, ChevronDown, LayoutDashboard, User
 } from 'lucide-react'
 import { MobileMenu } from '@/components/mobile-menu'
+import { createClient } from '@/lib/supabase/client'
 
 const tickerItems = [
   'Sac à dos imperméable 30L',
@@ -66,6 +68,19 @@ const features = [
 const avatars = ['JM', 'SA', 'LB', 'TP', 'MR']
 
 export default function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden noise">
 
@@ -88,26 +103,45 @@ export default function HomePage() {
             <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">Prodify</span>
+            <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <Link href="/pricing" className="text-sm text-white/50 hover:text-white transition-colors">Tarifs</Link>
             <Link href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Fonctionnalités</Link>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
-                Connexion
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25">
-                Essayer gratuitement
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Tableau de bord
+                  </Button>
+                </Link>
+                <Link href="/account">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25 gap-2">
+                    <User className="h-4 w-4" />
+                    Mon compte
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
+                    Connexion
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25">
+                    Essayer gratuitement
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
           {/* Mobile: hamburger */}
-          <MobileMenu />
+          <MobileMenu isLoggedIn={isLoggedIn} />
         </div>
       </motion.nav>
 
@@ -256,7 +290,7 @@ export default function HomePage() {
               <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] h-full">
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="text-sm text-white/40 font-medium">Avant Prodify</span>
+                  <span className="text-sm text-white/40 font-medium">Avant ShopScribe</span>
                 </div>
                 <div className="space-y-3">
                   <div className="text-white/30 text-sm">Nom du produit :</div>
@@ -279,7 +313,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-2 mb-5">
                   <div className="w-2 h-2 rounded-full bg-green-400" />
-                  <span className="text-sm text-purple-300 font-medium">Après Prodify</span>
+                  <span className="text-sm text-purple-300 font-medium">Après ShopScribe</span>
                 </div>
                 <div className="space-y-3 relative">
                   <div className="text-white/40 text-xs font-medium uppercase tracking-wide">Titre SEO</div>
@@ -425,9 +459,9 @@ export default function HomePage() {
             <div className="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center">
               <Zap className="h-3 w-3 text-white" />
             </div>
-            <span className="text-white/70 font-medium text-sm">Prodify</span>
+            <span className="text-white/70 font-medium text-sm">ShopScribe</span>
           </div>
-          <p className="text-white/20 text-xs">© 2025 Prodify. Tous droits réservés.</p>
+          <p className="text-white/20 text-xs">© 2025 ShopScribe. Tous droits réservés.</p>
           <div className="flex gap-6 text-xs text-white/30">
             <Link href="/pricing" className="hover:text-white/70 transition-colors">Tarifs</Link>
             <Link href="/login" className="hover:text-white/70 transition-colors">Connexion</Link>

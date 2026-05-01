@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Zap, Eye, EyeOff, Check, X } from 'lucide-react'
+import { Zap, Eye, EyeOff, CheckCircle, Check, X } from 'lucide-react'
 
 function getPasswordStrength(password: string): { score: number; checks: Record<string, boolean> } {
   const checks = {
@@ -21,42 +21,35 @@ function getPasswordStrength(password: string): { score: number; checks: Record<
   return { score, checks }
 }
 
-function translateError(message: string): string {
-  if (message.includes('User already registered') || message.includes('already been registered')) {
-    return 'Un compte existe déjà avec cet email.'
-  }
-  if (message.includes('Password should be at least')) {
-    return 'Le mot de passe doit contenir au moins 8 caractères.'
-  }
-  if (message.includes('Unable to validate email address')) {
-    return 'Adresse email invalide.'
-  }
-  if (message.includes('Signup is disabled')) {
-    return 'Les inscriptions sont temporairement désactivées.'
-  }
-  return 'Une erreur est survenue. Veuillez réessayer.'
-}
-
 const strengthLabels = ['', 'Faible', 'Moyen', 'Bon', 'Fort']
 const strengthColors = ['', 'bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500']
 
-export default function SignupPage() {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const supabase = createClient()
+  const [success, setSuccess] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
   const router = useRouter()
+  const supabase = createClient()
 
   const { score, checks } = getPasswordStrength(password)
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
 
-  async function handleSignup(e: React.FormEvent) {
+  useEffect(() => {
+    // Supabase handles the token from the URL hash automatically via onAuthStateChange
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setSessionReady(true)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  async function handleReset(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
@@ -71,39 +64,52 @@ export default function SignupPage() {
 
     setLoading(true)
 
-    // Inscription via route admin (bypass confirmation email)
-    const res = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-      }),
-    })
+    const { error } = await supabase.auth.updateUser({ password })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      setError(data.error || 'Une erreur est survenue. Veuillez réessayer.')
-      setLoading(false)
-      return
-    }
-
-    // Connexion automatique après inscription
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-    if (signInError) {
-      setError(translateError(signInError.message))
+    if (error) {
+      if (error.message.includes('Auth session missing') || error.message.includes('session')) {
+        setError('Le lien a expiré ou est invalide. Veuillez faire une nouvelle demande.')
+      } else if (error.message.includes('same password')) {
+        setError('Le nouveau mot de passe doit être différent de l\'ancien.')
+      } else {
+        setError('Une erreur est survenue. Veuillez réessayer.')
+      }
       setLoading(false)
     } else {
-      router.push('/dashboard')
-      router.refresh()
+      setSuccess(true)
+      setLoading(false)
+      setTimeout(() => router.push('/dashboard'), 2500)
     }
   }
 
+  if (success) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md"
+        >
+          <div className="p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center">
+            <div className="w-16 h-16 rounded-full bg-green-500/15 border border-green-500/25 flex items-center justify-center mx-auto mb-5">
+              <CheckCircle className="h-8 w-8 text-green-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">Mot de passe mis à jour</h2>
+            <p className="text-white/40 text-sm leading-relaxed">
+              Votre mot de passe a été réinitialisé avec succès.
+              Vous allez être redirigé vers votre tableau de bord.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-4 relative overflow-hidden">
       {/* Orbes */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
@@ -129,59 +135,14 @@ export default function SignupPage() {
         {/* Card */}
         <div className="p-6 sm:p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
           <div className="mb-6 text-center">
-            <h1 className="text-xl font-semibold text-white mb-1">Créer un compte</h1>
-            <p className="text-white/40 text-sm">10 fiches produits gratuites par mois</p>
+            <h1 className="text-xl font-semibold text-white mb-1">Nouveau mot de passe</h1>
+            <p className="text-white/40 text-sm">Choisissez un mot de passe sécurisé.</p>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-4">
-            {/* Prénom / Nom */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="firstName" className="text-white/60 text-sm">Prénom</Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  placeholder="Jean"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  autoComplete="given-name"
-                  className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl focus:border-purple-500/50 focus:ring-0 h-11"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="lastName" className="text-white/60 text-sm">Nom</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  placeholder="Dupont"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  autoComplete="family-name"
-                  className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl focus:border-purple-500/50 focus:ring-0 h-11"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
+          <form onSubmit={handleReset} className="space-y-4">
+            {/* Nouveau mot de passe */}
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-white/60 text-sm">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="vous@exemple.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl focus:border-purple-500/50 focus:ring-0 h-11"
-              />
-            </div>
-
-            {/* Mot de passe */}
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-white/60 text-sm">Mot de passe</Label>
+              <Label htmlFor="password" className="text-white/60 text-sm">Nouveau mot de passe</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -250,7 +211,7 @@ export default function SignupPage() {
               </AnimatePresence>
             </div>
 
-            {/* Confirmation mot de passe */}
+            {/* Confirmation */}
             <div className="space-y-1.5">
               <Label htmlFor="confirmPassword" className="text-white/60 text-sm">Confirmer le mot de passe</Label>
               <div className="relative">
@@ -309,28 +270,17 @@ export default function SignupPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-11 font-medium transition-all hover:shadow-lg hover:shadow-purple-600/20 disabled:opacity-50 mt-1"
+              className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-11 font-medium transition-all hover:shadow-lg hover:shadow-purple-600/20 disabled:opacity-50"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  Création en cours...
+                  Mise à jour...
                 </span>
-              ) : 'Créer mon compte gratuitement'}
+              ) : 'Mettre à jour le mot de passe'}
             </Button>
           </form>
-
-          <p className="mt-5 text-center text-white/30 text-sm">
-            Déjà un compte ?{' '}
-            <Link href="/login" className="text-purple-400 hover:text-purple-300 transition-colors font-medium">
-              Se connecter
-            </Link>
-          </p>
         </div>
-
-        <p className="text-center text-white/20 text-xs mt-4">
-          Aucune carte requise · Annulation à tout moment
-        </p>
       </motion.div>
     </div>
   )

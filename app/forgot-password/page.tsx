@@ -2,56 +2,78 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Zap, Eye, EyeOff } from 'lucide-react'
+import { Zap, Mail, ArrowLeft } from 'lucide-react'
 
-function translateError(message: string): string {
-  if (message.includes('Invalid login credentials') || message.includes('invalid_credentials')) {
-    return 'Email ou mot de passe incorrect.'
-  }
-  if (message.includes('Email not confirmed')) {
-    return 'Vous devez confirmer votre email avant de vous connecter. Vérifiez votre boîte mail.'
-  }
-  if (message.includes('Too many requests')) {
-    return 'Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.'
-  }
-  if (message.includes('User not found')) {
-    return 'Aucun compte trouvé avec cet email.'
-  }
-  if (message.includes('network') || message.includes('fetch')) {
-    return 'Erreur de connexion. Vérifiez votre connexion internet.'
-  }
-  return 'Une erreur est survenue. Veuillez réessayer.'
-}
-
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
+  const [sent, setSent] = useState(false)
   const supabase = createClient()
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
 
     if (error) {
-      setError(translateError(error.message))
-      setLoading(false)
-    } else {
-      router.push('/dashboard')
-      router.refresh()
+      // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
+      // On affiche toujours le succès, sauf erreur réseau
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        setError('Erreur de connexion. Vérifiez votre connexion internet.')
+        setLoading(false)
+        return
+      }
     }
+
+    setSent(true)
+    setLoading(false)
+  }
+
+  if (sent) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md"
+        >
+          <div className="p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-center">
+            <div className="w-16 h-16 rounded-full bg-purple-500/15 border border-purple-500/25 flex items-center justify-center mx-auto mb-5">
+              <Mail className="h-8 w-8 text-purple-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white mb-2">Email envoyé</h2>
+            <p className="text-white/40 text-sm leading-relaxed mb-1">
+              Si un compte existe pour{' '}
+              <strong className="text-white/70">{email}</strong>,
+              vous recevrez un lien pour réinitialiser votre mot de passe.
+            </p>
+            <p className="text-white/25 text-xs mt-3 mb-6">
+              Vérifiez aussi vos spams. Le lien expire dans 1 heure.
+            </p>
+            <Link
+              href="/login"
+              className="text-purple-400 hover:text-purple-300 transition-colors text-sm font-medium flex items-center justify-center gap-1.5"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Retour à la connexion
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -81,12 +103,13 @@ export default function LoginPage() {
         {/* Card */}
         <div className="p-6 sm:p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
           <div className="mb-6 text-center">
-            <h1 className="text-xl font-semibold text-white mb-1">Connexion</h1>
-            <p className="text-white/40 text-sm">Connectez-vous à votre compte</p>
+            <h1 className="text-xl font-semibold text-white mb-1">Mot de passe oublié</h1>
+            <p className="text-white/40 text-sm">
+              Entrez votre email et nous vous enverrons un lien de réinitialisation.
+            </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-white/60 text-sm">Email</Label>
               <Input
@@ -101,39 +124,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Mot de passe */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-white/60 text-sm">Mot de passe</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
-                >
-                  Mot de passe oublié ?
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  className="bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/20 rounded-xl focus:border-purple-500/50 focus:ring-0 h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Erreur */}
             <AnimatePresence>
               {error && (
                 <motion.p
@@ -155,16 +145,19 @@ export default function LoginPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  Connexion...
+                  Envoi en cours...
                 </span>
-              ) : 'Se connecter'}
+              ) : 'Envoyer le lien'}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-white/30 text-sm">
-            Pas encore de compte ?{' '}
-            <Link href="/signup" className="text-purple-400 hover:text-purple-300 transition-colors font-medium">
-              Créer un compte
+            <Link
+              href="/login"
+              className="text-purple-400 hover:text-purple-300 transition-colors font-medium flex items-center justify-center gap-1.5"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Retour à la connexion
             </Link>
           </p>
         </div>

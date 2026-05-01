@@ -16,7 +16,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Prodify — Fiches produits en 10 secondes",
+  title: "ShopScribe — Fiches produits en 10 secondes",
   description: "Générez des fiches produits optimisées SEO avec l'IA. Titres, descriptions, bullet points, meta descriptions en français et anglais.",
 };
 

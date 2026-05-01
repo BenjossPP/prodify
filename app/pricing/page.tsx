@@ -1,17 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Zap, CheckCircle, ArrowRight } from 'lucide-react'
+import { Zap, CheckCircle, ArrowRight, LayoutDashboard, User } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const plans = [
   {
     name: 'Gratuit',
     price: 0,
-    desc: 'Pour tester Prodify',
+    desc: 'Pour tester ShopScribe',
     priceId: null,
     planKey: 'free',
     features: [
@@ -69,6 +70,14 @@ const plans = [
 
 export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session))
+    return () => subscription.unsubscribe()
+  }, [])
 
   async function handleCheckout(priceId: string, planKey: string) {
     setLoadingPlan(planKey)
@@ -110,26 +119,53 @@ export default function PricingPage() {
             <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">Prodify</span>
+            <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
           </Link>
           <div className="hidden sm:flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
-                Connexion
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl">
-                Essayer gratuitement
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Tableau de bord
+                  </Button>
+                </Link>
+                <Link href="/account">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl gap-2">
+                    <User className="h-4 w-4" />
+                    Mon compte
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
+                    Connexion
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl">
+                    Essayer gratuitement
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
           <div className="sm:hidden flex items-center gap-2">
-            <Link href="/signup">
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs px-3">
-                Essayer
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs px-3">
+                  Tableau de bord
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/signup">
+                <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs px-3">
+                  Essayer
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>

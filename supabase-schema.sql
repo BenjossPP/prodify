@@ -1,6 +1,8 @@
 -- Profiles table (extends auth.users)
 create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
+  first_name text,
+  last_name text,
   plan text not null default 'free' check (plan in ('free', 'pro', 'business')),
   generations_used integer not null default 0,
   generations_reset_at timestamptz default now(),
@@ -8,6 +10,10 @@ create table if not exists public.profiles (
   stripe_subscription_id text,
   created_at timestamptz default now()
 );
+
+-- Add first_name / last_name to existing tables (idempotent)
+alter table public.profiles add column if not exists first_name text;
+alter table public.profiles add column if not exists last_name text;
 
 -- Generations history
 create table if not exists public.generations (
@@ -22,12 +28,16 @@ create table if not exists public.generations (
   created_at timestamptz default now()
 );
 
--- Auto-create profile on signup
+-- Auto-create profile on signup (stores first_name and last_name from metadata)
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id)
-  values (new.id);
+  insert into public.profiles (id, first_name, last_name)
+  values (
+    new.id,
+    new.raw_user_meta_data->>'first_name',
+    new.raw_user_meta_data->>'last_name'
+  );
   return new;
 end;
 $$ language plpgsql security definer;
@@ -46,6 +56,26 @@ begin
   where id = user_id;
 end;
 $$ language plpgsql security definer;
+
+-- Brand profile & bulk jobs
+alter table public.profiles add column if not exists brand_profile jsonb;
+
+create table if not exists public.bulk_jobs (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  status text not null default 'pending' check (status in ('pending', 'processing', 'done', 'error')),
+  total integer not null default 0,
+  processed integer not null default 0,
+  results jsonb not null default '[]',
+  created_at timestamptz default now()
+);
+
+alter table public.bulk_jobs enable row level security;
+
+create policy "Users can manage own bulk jobs"
+  on public.bulk_jobs for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- RLS policies
 alter table public.profiles enable row level security;

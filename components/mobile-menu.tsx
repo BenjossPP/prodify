@@ -3,10 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Zap, ArrowRight } from 'lucide-react'
+import { Menu, X, Zap, ArrowRight, LayoutDashboard, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function MobileMenu() {
+interface MobileMenuProps {
+  isLoggedIn?: boolean
+}
+
+export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -50,7 +54,7 @@ export function MobileMenu() {
                   <div className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center">
                     <Zap className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <span className="text-white font-semibold tracking-tight">Prodify</span>
+                  <span className="text-white font-semibold tracking-tight">ShopScribe</span>
                 </div>
                 <button
                   onClick={() => setOpen(false)}
@@ -77,24 +81,46 @@ export function MobileMenu() {
                 >
                   Fonctionnalités
                 </Link>
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition-all text-sm font-medium"
-                >
-                  Connexion
-                </Link>
+                {isLoggedIn ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition-all text-sm font-medium"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Tableau de bord
+                  </Link>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-white/60 hover:text-white hover:bg-white/[0.06] transition-all text-sm font-medium"
+                  >
+                    Connexion
+                  </Link>
+                )}
               </nav>
 
               {/* CTA */}
               <div className="px-4 pb-8 pt-4 border-t border-white/[0.06]">
-                <Link href="/signup" onClick={() => setOpen(false)}>
-                  <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-12 gap-2 text-sm font-medium">
-                    Essayer gratuitement
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <p className="text-center text-white/25 text-xs mt-3">3 générations gratuites · Sans CB</p>
+                {isLoggedIn ? (
+                  <Link href="/account" onClick={() => setOpen(false)}>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-12 gap-2 text-sm font-medium">
+                      <User className="h-4 w-4" />
+                      Mon compte
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/signup" onClick={() => setOpen(false)}>
+                      <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-12 gap-2 text-sm font-medium">
+                        Essayer gratuitement
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <p className="text-center text-white/25 text-xs mt-3">3 générations gratuites · Sans CB</p>
+                  </>
+                )}
               </div>
             </motion.div>
           </>
