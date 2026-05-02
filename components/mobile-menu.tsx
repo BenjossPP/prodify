@@ -16,6 +16,9 @@ const EASE = [0.21, 0.47, 0.32, 0.98] as const
 
 export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => { setReady(true) }, [])
   const scrollY = useRef(0)
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
       </motion.button>
 
       <AnimatePresence>
-        {open && (
+        {ready && open && (
           <>
             {/* Backdrop */}
             <motion.div
