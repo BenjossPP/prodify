@@ -1267,17 +1267,17 @@ export default function DashboardClient({
         {/* Tabs */}
         <Tabs defaultValue="generate">
           <TabsList className="bg-white/[0.04] border border-white/[0.065] rounded-xl p-1 mb-6 w-full sm:w-auto sm:inline-flex">
-            <TabsTrigger value="generate" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-3 sm:px-4 transition-all duration-200">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Générer
+            <TabsTrigger value="generate" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-2 sm:px-4 transition-all duration-200">
+              <Sparkles className="h-3.5 w-3.5 sm:mr-1.5" /> <span className="hidden xs:inline sm:inline">Générer</span>
             </TabsTrigger>
-            <TabsTrigger value="bulk" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-3 sm:px-4 transition-all duration-200">
-              <Layers className="h-3.5 w-3.5 mr-1.5" /> Masse
+            <TabsTrigger value="bulk" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-2 sm:px-4 transition-all duration-200">
+              <Layers className="h-3.5 w-3.5 sm:mr-1.5" /> <span className="hidden xs:inline sm:inline">Masse</span>
             </TabsTrigger>
-            <TabsTrigger value="brand" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-3 sm:px-4 transition-all duration-200">
-              <Building2 className="h-3.5 w-3.5 mr-1.5" /> Ma Marque
+            <TabsTrigger value="brand" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-2 sm:px-4 transition-all duration-200">
+              <Building2 className="h-3.5 w-3.5 sm:mr-1.5" /> <span className="hidden xs:inline sm:inline">Marque</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-3 sm:px-4 transition-all duration-200">
-              <History className="h-3.5 w-3.5 mr-1.5" /> Historique
+            <TabsTrigger value="history" className="flex-1 sm:flex-none rounded-lg text-xs sm:text-sm data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/38 px-2 sm:px-4 transition-all duration-200">
+              <History className="h-3.5 w-3.5 sm:mr-1.5" /> <span className="hidden xs:inline sm:inline">Historique</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1434,8 +1434,8 @@ export default function DashboardClient({
                     >
                       {loading ? (
                         <>
-                          <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                          {withVariants ? 'Génération de 3 variantes...' : 'Génération en cours...'}
+                          <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin shrink-0" />
+                          <span className="truncate">{withVariants ? 'Génération de 3 variantes...' : 'Génération en cours...'}</span>
                         </>
                       ) : (
                         <>
