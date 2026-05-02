@@ -222,7 +222,7 @@ export default function PricingPage() {
 
           {/* Plans */}
           <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start" staggerDelay={0.1}>
-            {plans.map((plan, i) => (
+            {plans.map((plan) => (
               <StaggerItem key={plan.name}>
                 <motion.div
                   className={`relative flex flex-col rounded-2xl border transition-all duration-300 ${
@@ -302,7 +302,8 @@ export default function PricingPage() {
                     </Button>
                   </motion.div>
                 )}
-              </motion.div>
+                </motion.div>
+              </StaggerItem>
             ))}
           </StaggerContainer>
 
