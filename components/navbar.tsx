@@ -68,9 +68,9 @@ export function Navbar() {
       {/* ── Navbar pill ─────────────────────────────────────────── */}
       <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 sm:pt-5">
         <motion.nav
-          initial={{ y: -72, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           className={`relative w-full max-w-5xl transition-all duration-500 ${
             scrolled
               ? 'rounded-2xl bg-[#0b0b14]/90 backdrop-blur-2xl border border-white/[0.09] shadow-2xl shadow-black/40 py-2.5 px-4 sm:px-5'
