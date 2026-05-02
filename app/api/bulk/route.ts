@@ -27,29 +27,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Maximum 100 produits par batch' }, { status: 400 })
   }
 
-  // Check quota
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, generations_used, generations_reset_at, brand_profile')
+    .select('plan, generations_used, brand_profile')
     .eq('id', user.id)
     .single()
 
   if (profile) {
     const plan = profile.plan || 'free'
-    const limits: Record<string, number> = { free: 10, pro: 500, business: -1 }
-    const limit = limits[plan]
-    const resetAt = new Date(profile.generations_reset_at || 0)
-    const now = new Date()
-
-    let currentUsed = profile.generations_used
-    if (now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()) {
-      await supabase.from('profiles').update({ generations_used: 0, generations_reset_at: now.toISOString() }).eq('id', user.id)
-      currentUsed = 0
-    }
+    const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
+    const limit = limits[plan] ?? 3
+    const currentUsed = profile.generations_used
 
     if (limit !== -1 && currentUsed + rows.length > limit) {
       return NextResponse.json(
-        { error: `Quota insuffisant. Vous avez ${limit - currentUsed} générations restantes.` },
+        { error: `Quota insuffisant. Vous avez ${Math.max(0, limit - currentUsed)} générations restantes.` },
         { status: 429 }
       )
     }

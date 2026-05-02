@@ -14,8 +14,8 @@ import {
   Check, Eye, EyeOff, X
 } from 'lucide-react'
 
-const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', pro: 'Pro', business: 'Business' }
-const PLAN_LIMITS: Record<string, number> = { free: 10, pro: 500, business: -1 }
+const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', starter: 'Starter', pro: 'Pro', business: 'Business' }
+const PLAN_LIMITS: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
 
 function getPasswordStrength(password: string) {
   const checks = {
@@ -181,7 +181,7 @@ export default function AccountClient({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-white/40">
-              <span>{limit === -1 ? 'Générations illimitées' : `${used} / ${limit} générations ce mois`}</span>
+              <span>{limit === -1 ? 'Générations illimitées' : `${used} / ${limit} fiches utilisées`}</span>
               <span className="text-white/60">{remaining === '∞' ? '∞ restantes' : `${remaining} restantes`}</span>
             </div>
             {limit !== -1 && (

@@ -20,28 +20,20 @@ export async function POST(request: NextRequest) {
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, generations_used, generations_reset_at, brand_profile')
+        .select('plan, generations_used, brand_profile')
         .eq('id', user.id)
         .single()
 
       if (profile) {
         const plan = profile.plan || 'free'
-        const limits: Record<string, number> = { free: 10, pro: 500, business: -1 }
-        const limit = limits[plan]
+        const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
+        const limit = limits[plan] ?? 3
         // Each variant call counts as 3 generations
         const cost = variants ? 3 : 1
 
-        // Reset monthly counter if needed
-        const resetAt = new Date(profile.generations_reset_at || 0)
-        const now = new Date()
-        if (now.getMonth() !== resetAt.getMonth() || now.getFullYear() !== resetAt.getFullYear()) {
-          await supabase
-            .from('profiles')
-            .update({ generations_used: 0, generations_reset_at: now.toISOString() })
-            .eq('id', user.id)
-        } else if (limit !== -1 && profile.generations_used + cost > limit) {
+        if (limit !== -1 && profile.generations_used + cost > limit) {
           return NextResponse.json(
-            { error: 'Quota mensuel atteint. Passez au plan supérieur.' },
+            { error: 'Quota atteint. Achetez un nouveau pack pour continuer.' },
             { status: 429 }
           )
         }

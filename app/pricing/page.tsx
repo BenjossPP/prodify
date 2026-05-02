@@ -16,7 +16,7 @@ const plans = [
     priceId: null,
     planKey: 'free',
     features: [
-      '10 fiches produits / mois',
+      '3 fiches produits',
       'Français & Anglais',
       'Titre + Description + Bullets',
       'Meta description + Tags',
@@ -26,13 +26,30 @@ const plans = [
     highlight: false,
   },
   {
+    name: 'Starter',
+    price: 9,
+    desc: 'Pour démarrer',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
+    planKey: 'starter',
+    features: [
+      '25 fiches produits',
+      'Français & Anglais',
+      'Titre + Description + Bullets',
+      'Meta description + Tags',
+      'Historique des générations',
+    ],
+    cta: 'Choisir Starter',
+    href: null,
+    highlight: false,
+  },
+  {
     name: 'Pro',
-    price: 19,
+    price: 29,
     desc: 'Pour les vendeurs actifs',
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
     planKey: 'pro',
     features: [
-      '500 fiches produits / mois',
+      '100 fiches produits',
       'Français & Anglais',
       'Titre + Description + Bullets',
       'Meta description + Tags',
@@ -40,18 +57,18 @@ const plans = [
       'Export CSV / JSON',
       'Upload CSV en masse',
     ],
-    cta: 'Passer au Pro',
+    cta: 'Choisir Pro',
     href: null,
     highlight: true,
   },
   {
     name: 'Business',
-    price: 49,
+    price: 59,
     desc: 'Pour les équipes & agences',
     priceId: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID,
     planKey: 'business',
     features: [
-      'Générations illimitées',
+      '500 fiches produits',
       'Français & Anglais',
       'Titre + Description + Bullets',
       'Meta description + Tags',
@@ -59,10 +76,9 @@ const plans = [
       'Export CSV / JSON',
       'Upload CSV en masse',
       'Ton personnalisable',
-      'Accès API',
       'Support prioritaire',
     ],
-    cta: 'Passer au Business',
+    cta: 'Choisir Business',
     href: null,
     highlight: false,
   },
@@ -71,11 +87,18 @@ const plans = [
 export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [sessionLoading, setSessionLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session))
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+      setSessionLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsLoggedIn(!!session)
+      setSessionLoading(false)
+    })
     return () => subscription.unsubscribe()
   }, [])
 
@@ -122,7 +145,9 @@ export default function PricingPage() {
             <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
           </Link>
           <div className="hidden sm:flex items-center gap-3">
-            {isLoggedIn ? (
+            {sessionLoading ? (
+              <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
+            ) : isLoggedIn ? (
               <>
                 <Link href="/dashboard">
                   <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
@@ -153,19 +178,19 @@ export default function PricingPage() {
             )}
           </div>
           <div className="sm:hidden flex items-center gap-2">
-            {isLoggedIn ? (
+            {!sessionLoading && isLoggedIn ? (
               <Link href="/dashboard">
                 <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs px-3">
                   Tableau de bord
                 </Button>
               </Link>
-            ) : (
+            ) : !sessionLoading ? (
               <Link href="/signup">
                 <Button size="sm" className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs px-3">
                   Essayer
                 </Button>
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </nav>
@@ -191,7 +216,7 @@ export default function PricingPage() {
           </motion.div>
 
           {/* Plans */}
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.name}
@@ -200,13 +225,13 @@ export default function PricingPage() {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className={`relative flex flex-col p-5 sm:p-6 rounded-2xl border card-hover ${
                   plan.highlight
-                    ? 'bg-purple-600/10 border-purple-500/40 sm:col-span-2 md:col-span-1'
+                    ? 'bg-purple-600/10 border-purple-500/40'
                     : 'bg-white/[0.03] border-white/[0.06]'
                 }`}
               >
                 {plan.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+                    <span className="bg-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">
                       ⚡ Le plus populaire
                     </span>
                   </div>
@@ -219,7 +244,7 @@ export default function PricingPage() {
                     <span className="text-4xl font-heading font-semibold text-white">
                       {plan.price === 0 ? 'Gratuit' : `${plan.price}€`}
                     </span>
-                    {plan.price > 0 && <span className="text-white/30 text-sm">/mois</span>}
+                    {plan.price > 0 && <span className="text-white/30 text-sm">paiement unique</span>}
                   </div>
                   <p className="text-white/30 text-xs">{plan.desc}</p>
                 </div>
@@ -277,7 +302,7 @@ export default function PricingPage() {
             transition={{ delay: 0.5 }}
             className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 sm:mt-12 text-white/25 text-sm"
           >
-            {['Annulation à tout moment', 'Paiement sécurisé par Stripe', 'Support par email'].map(t => (
+            {['Sans abonnement', 'Paiement sécurisé par Stripe', 'Support par email'].map(t => (
               <div key={t} className="flex items-center gap-2">
                 <CheckCircle className="h-3.5 w-3.5 text-white/20" />
                 {t}

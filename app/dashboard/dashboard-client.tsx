@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Zap, Copy, Check, LogOut, History, Sparkles,
+  Tag, Copy, Check, LogOut, History, Sparkles,
   Crown, ArrowRight, FileText, Tag, AlignLeft, Hash,
   Upload, BarChart2, Layers, Building2, X, Download,
   ChevronLeft, ChevronRight, Save, RefreshCw, AlertCircle
@@ -64,8 +64,8 @@ interface BulkResult extends ProductSheet {
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const PLAN_LIMITS: Record<string, number> = { free: 10, pro: 500, business: -1 }
-const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', pro: 'Pro', business: 'Business' }
+const PLAN_LIMITS: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
+const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', starter: 'Starter', pro: 'Pro', business: 'Business' }
 
 const CATEGORIES = ['Général', 'Mode', 'Électronique', 'Sport', 'Maison', 'Beauté', 'Alimentation', 'Bijoux']
 const TONES = [
@@ -533,7 +533,7 @@ export default function DashboardClient({
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center">
-              <Zap className="h-3.5 w-3.5 text-white" />
+              <Tag className="h-3.5 w-3.5 text-white" />
             </div>
             <span className="text-sm font-semibold text-white/80">ShopScribe</span>
           </Link>
@@ -560,7 +560,7 @@ export default function DashboardClient({
           <div className="flex-1 w-full">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs sm:text-sm text-white/60">
-                {limit === -1 ? 'Générations illimitées' : `${used} / ${limit} générations utilisées ce mois`}
+                {limit === -1 ? 'Générations illimitées' : `${used} / ${limit} fiches utilisées`}
               </span>
               <span className="text-xs sm:text-sm font-medium text-white">
                 {remaining === '∞' ? '∞ restantes' : `${remaining} restantes`}

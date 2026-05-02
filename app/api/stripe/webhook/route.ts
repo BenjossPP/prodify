@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
+import { PLANS } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 
 // Client admin sans session — utilisé uniquement pour les webhooks
@@ -31,39 +32,25 @@ export async function POST(request: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const session = event.data.object as any
       const uid = session.metadata?.supabase_uid
-      const plan = session.metadata?.plan
+      const plan = session.metadata?.plan as keyof typeof PLANS
 
       console.log('checkout.session.completed — uid:', uid, 'plan:', plan)
 
-      if (uid && plan) {
+      if (uid && plan && PLANS[plan]) {
+        const generations = PLANS[plan].generations
         const { error } = await supabase
           .from('profiles')
-          .update({ plan, stripe_subscription_id: session.subscription as string })
+          .update({
+            plan,
+            generations_used: 0,
+            generations_limit: generations,
+          })
           .eq('id', uid)
 
         if (error) console.error('Supabase update error:', error)
-        else console.log('Plan mis à jour avec succès:', plan, 'pour', uid)
+        else console.log('Plan mis à jour avec succès:', plan, 'pour', uid, '— quota:', generations)
       } else {
-        console.warn('uid ou plan manquant dans les metadata:', session.metadata)
-      }
-      break
-    }
-    case 'customer.subscription.deleted': {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const subscription = event.data.object as any
-      const customerId = subscription.customer as string
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('stripe_customer_id', customerId)
-        .single()
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({ plan: 'free', stripe_subscription_id: null })
-          .eq('id', profile.id)
+        console.warn('uid ou plan manquant / invalide dans les metadata:', session.metadata)
       }
       break
     }

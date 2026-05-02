@@ -7,8 +7,8 @@ import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from '@/components/ani
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  Zap, ArrowRight, CheckCircle, Star, Clock, TrendingUp,
-  Sparkles, Shield, Globe, ChevronDown, LayoutDashboard, User
+  ArrowRight, CheckCircle, Star, Clock, TrendingUp,
+  Sparkles, Shield, Globe, ChevronDown, LayoutDashboard, User, Zap, Tag
 } from 'lucide-react'
 import { MobileMenu } from '@/components/mobile-menu'
 import { createClient } from '@/lib/supabase/client'
@@ -69,14 +69,17 @@ const avatars = ['JM', 'SA', 'LB', 'TP', 'MR']
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [sessionLoading, setSessionLoading] = useState(true)
   const supabase = createClient()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session)
+      setSessionLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session)
+      setSessionLoading(false)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -101,7 +104,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
+              <Tag className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
           </div>
@@ -110,7 +113,9 @@ export default function HomePage() {
             <Link href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Fonctionnalités</Link>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            {isLoggedIn ? (
+            {sessionLoading ? (
+              <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
+            ) : isLoggedIn ? (
               <>
                 <Link href="/dashboard">
                   <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
@@ -385,14 +390,15 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
-              { name: 'Gratuit', price: '0€', desc: 'Pour tester', features: ['10 fiches / mois', 'FR & EN', 'Tous les champs'], highlight: false },
-              { name: 'Pro', price: '19€', desc: '/mois', features: ['500 fiches / mois', 'Export CSV/JSON', 'Historique', 'Upload en masse'], highlight: true },
-              { name: 'Business', price: '49€', desc: '/mois', features: ['Illimité', 'Accès API', 'Ton personnalisé', 'Support prioritaire'], highlight: false },
+              { name: 'Gratuit', price: '0€', desc: '', features: ['3 fiches', 'FR & EN', 'Tous les champs'], highlight: false },
+              { name: 'Starter', price: '9€', desc: 'paiement unique', features: ['25 fiches', 'FR & EN', 'Tous les champs', 'Historique'], highlight: false },
+              { name: 'Pro', price: '29€', desc: 'paiement unique', features: ['100 fiches', 'Export CSV/JSON', 'Historique', 'Upload en masse'], highlight: true },
+              { name: 'Business', price: '59€', desc: 'paiement unique', features: ['500 fiches', 'Ton personnalisé', 'Upload en masse', 'Support prioritaire'], highlight: false },
             ].map(({ name, price, desc, features, highlight }) => (
               <StaggerItem key={name}>
-                <div className={`p-5 sm:p-6 rounded-2xl border h-full flex flex-col card-hover ${highlight ? 'bg-purple-600/10 border-purple-500/40 sm:col-span-2 md:col-span-1' : 'bg-white/[0.03] border-white/[0.06]'}`}>
+                <div className={`p-5 sm:p-6 rounded-2xl border h-full flex flex-col card-hover ${highlight ? 'bg-purple-600/10 border-purple-500/40' : 'bg-white/[0.03] border-white/[0.06]'}`}>
                   {highlight && (
                     <div className="text-xs text-purple-400 font-medium mb-3 uppercase tracking-wide">⚡ Le plus populaire</div>
                   )}
@@ -457,7 +463,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center">
-              <Zap className="h-3 w-3 text-white" />
+              <Tag className="h-3 w-3 text-white" />
             </div>
             <span className="text-white/70 font-medium text-sm">ShopScribe</span>
           </div>
