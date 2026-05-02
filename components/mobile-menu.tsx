@@ -60,8 +60,8 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 30, stiffness: 280, mass: 0.8 }}
-              className="fixed top-0 right-0 bottom-0 z-[70] w-[300px] flex flex-col shadow-2xl shadow-black/60"
-              style={{ backgroundColor: '#0c0c15' }}
+              className="fixed top-0 right-0 bottom-0 z-[70] w-[300px] flex flex-col shadow-2xl shadow-black/80"
+              style={{ backgroundColor: '#09090f', backgroundImage: 'none', isolation: 'isolate' }}
             >
               {/* Orb déco interne */}
               <div className="absolute top-[-10%] right-[-10%] w-[220px] h-[220px] rounded-full bg-purple-600/12 blur-[80px] pointer-events-none" />
