@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Tag, Copy, Check, LogOut, History, Sparkles,
+  Copy, Check, LogOut, History, Sparkles,
   Crown, ArrowRight, FileText, Tag, AlignLeft, Hash,
   Upload, BarChart2, Layers, Building2, X, Download,
   ChevronLeft, ChevronRight, Save, RefreshCw, AlertCircle
