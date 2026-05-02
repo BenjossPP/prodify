@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Tag, ArrowRight, LayoutDashboard, User } from 'lucide-react'
-import { MobileMenu } from '@/components/mobile-menu'
+import dynamic from 'next/dynamic'
+const MobileMenu = dynamic(() => import('@/components/mobile-menu').then(m => ({ default: m.MobileMenu })), { ssr: false })
 import { createClient } from '@/lib/supabase/client'
 
 export function Navbar() {

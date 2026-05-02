@@ -17,9 +17,6 @@ const EASE = [0.21, 0.47, 0.32, 0.98] as const
 
 export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
-  const [isBrowser, setIsBrowser] = useState(false)
-
-  useEffect(() => { setIsBrowser(true) }, [])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -47,7 +44,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
         <Menu className="h-5 w-5" />
       </motion.button>
 
-      {isBrowser && createPortal(
+      {createPortal(
         <AnimatePresence>
           {open && (
             <>
