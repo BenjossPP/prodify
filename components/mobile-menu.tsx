@@ -110,9 +110,10 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: '#09090f',
+                background: '#09090f',
                 boxShadow: '-8px 0 40px rgba(0,0,0,0.7)',
                 overflow: 'hidden',
-                // Force le GPU rendering sur iOS
+                willChange: 'auto',
                 WebkitTransform: 'translateZ(0)',
                 transform: 'translateZ(0)',
               }}
