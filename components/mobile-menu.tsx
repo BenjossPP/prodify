@@ -102,7 +102,6 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
                 position: 'fixed',
                 top: 0,
                 right: 0,
-                // iOS Safari : hauteur réelle du viewport
                 height: '100%',
                 zIndex: 9999,
                 width: 300,
@@ -110,19 +109,11 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: '#09090f',
-                background: '#09090f',
                 boxShadow: '-8px 0 40px rgba(0,0,0,0.7)',
-                overflow: 'hidden',
-                willChange: 'auto',
-                WebkitTransform: 'translateZ(0)',
-                transform: 'translateZ(0)',
+                // PAS de overflow:hidden ni de filter:blur ici — bug Safari
               }}
             >
-              {/* Orbs déco */}
-              <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(147,51,234,0.15), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: '10%', left: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
-
-              {/* Bordure gauche lumineuse */}
+              {/* Bordure gauche lumineuse — sans blur */}
               <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(168,85,247,0.35), transparent)', zIndex: 1 }} />
 
               {/* Header */}
