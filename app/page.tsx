@@ -73,6 +73,7 @@ const avatars = ['JM', 'SA', 'LB', 'TP', 'MR']
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [sessionLoading, setSessionLoading] = useState(true)
+  const [scrolled, setScrolled] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -87,6 +88,12 @@ export default function HomePage() {
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#080810] text-white overflow-hidden noise bg-grid">
 
@@ -97,75 +104,112 @@ export default function HomePage() {
         <div className="orb-3 absolute bottom-[-8%] left-[25%] w-[450px] h-[450px] rounded-full bg-pink-600/8 blur-[110px]" />
       </div>
 
-      {/* Navbar */}
-      <motion.nav
-        className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3.5"
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
-      >
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <motion.div
-            className="flex items-center gap-2.5"
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-600/30">
-              <Tag className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-base font-semibold tracking-tight">ShopScribe</span>
-          </motion.div>
-          <motion.div
-            className="hidden md:flex items-center gap-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Link href="/pricing" className="text-sm text-white/45 hover:text-white/90 transition-colors duration-200">Tarifs</Link>
-            <Link href="#features" className="text-sm text-white/45 hover:text-white/90 transition-colors duration-200">Fonctionnalités</Link>
-          </motion.div>
-          <motion.div
-            className="hidden md:flex items-center gap-3"
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            {sessionLoading ? (
-              <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
-            ) : isLoggedIn ? (
-              <>
-                <Link href="/dashboard">
-                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm gap-2 rounded-xl">
-                    <LayoutDashboard className="h-4 w-4" />
-                    Tableau de bord
-                  </Button>
+      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4 sm:pt-5">
+        <motion.nav
+          initial={{ y: -72, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className={`relative w-full max-w-5xl transition-all duration-500 ${
+            scrolled
+              ? 'rounded-2xl bg-[#0b0b14]/90 backdrop-blur-2xl border border-white/[0.09] shadow-2xl shadow-black/40 py-2.5 px-4 sm:px-5'
+              : 'rounded-2xl bg-[#080810]/50 backdrop-blur-xl border border-white/[0.06] py-3 px-4 sm:px-5'
+          }`}
+        >
+          {/* top-line lumineuse */}
+          <div className="absolute top-0 left-[20%] right-[20%] h-px bg-gradient-to-r from-transparent via-purple-400/30 to-transparent pointer-events-none" />
+
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Link href="/" className="flex items-center gap-2.5 group">
+                <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:shadow-purple-600/55 transition-shadow duration-300">
+                  <Tag className="h-4 w-4 text-white" />
+                  {/* glow interne */}
+                  <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <span className="text-base font-semibold tracking-tight bg-gradient-to-r from-white to-white/75 bg-clip-text text-transparent group-hover:to-white transition-all duration-300">
+                  ShopScribe
+                </span>
+              </Link>
+            </motion.div>
+
+            {/* Nav links — desktop */}
+            <motion.div
+              className="hidden md:flex items-center gap-1"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              {[
+                { href: '#features', label: 'Fonctionnalités' },
+                { href: '/pricing', label: 'Tarifs' },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="relative group px-3.5 py-2 text-sm text-white/45 hover:text-white/90 transition-colors duration-200 rounded-xl hover:bg-white/[0.04]"
+                >
+                  {label}
+                  {/* underline animée */}
+                  <span className="absolute bottom-1.5 left-3.5 right-3.5 h-px bg-gradient-to-r from-purple-500/0 via-purple-400/60 to-purple-500/0 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
                 </Link>
-                <Link href="/account">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30 gap-2">
-                    <User className="h-4 w-4" />
-                    Mon compte
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm rounded-xl">
-                    Connexion
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30">
-                    Essayer gratuitement
-                  </Button>
-                </Link>
-              </>
-            )}
-          </motion.div>
-          <MobileMenu isLoggedIn={isLoggedIn} />
-        </div>
-      </motion.nav>
+              ))}
+            </motion.div>
+
+            {/* CTA buttons — desktop */}
+            <motion.div
+              className="hidden md:flex items-center gap-2.5"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              {sessionLoading ? (
+                <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
+              ) : isLoggedIn ? (
+                <>
+                  <Link href="/dashboard">
+                    <button className="flex items-center gap-2 px-3.5 py-2 text-sm text-white/50 hover:text-white/85 hover:bg-white/[0.05] rounded-xl transition-all duration-200">
+                      <LayoutDashboard className="h-3.5 w-3.5" />
+                      Dashboard
+                    </button>
+                  </Link>
+                  <Link href="/account">
+                    <button className="relative flex items-center gap-2 px-4 py-2 text-sm text-white font-medium rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-600/25 hover:shadow-purple-600/40 transition-all duration-300 overflow-hidden group">
+                      <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/8 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+                      <User className="h-3.5 w-3.5 relative z-10" />
+                      <span className="relative z-10">Mon compte</span>
+                    </button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <button className="px-3.5 py-2 text-sm text-white/50 hover:text-white/85 hover:bg-white/[0.05] rounded-xl transition-all duration-200">
+                      Connexion
+                    </button>
+                  </Link>
+                  <Link href="/signup">
+                    <button className="relative flex items-center gap-2 px-4 py-2 text-sm text-white font-medium rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-600/25 hover:shadow-purple-600/40 transition-all duration-300 overflow-hidden group">
+                      {/* shimmer sweep */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+                      <span className="relative z-10">Essayer gratuitement</span>
+                      <ArrowRight className="h-3.5 w-3.5 relative z-10 group-hover:translate-x-0.5 transition-transform duration-200" />
+                    </button>
+                  </Link>
+                </>
+              )}
+            </motion.div>
+
+            {/* Mobile menu */}
+            <MobileMenu isLoggedIn={isLoggedIn} />
+          </div>
+        </motion.nav>
+      </div>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative pt-36 sm:pt-44 pb-16 sm:pb-24 px-4 sm:px-6 text-center">
