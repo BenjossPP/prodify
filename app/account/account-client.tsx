@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Zap, LogOut, Crown, User, Mail, Shield, ArrowRight,
-  Check, Eye, EyeOff, X
+  Check, Eye, EyeOff, X, Tag
 } from 'lucide-react'
 
 const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', starter: 'Starter', pro: 'Pro', business: 'Business' }
@@ -129,10 +129,10 @@ export default function AccountClient({
       <header className="glass-nav sticky top-0 z-40 px-4 sm:px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center">
-              <Zap className="h-3.5 w-3.5 text-white" />
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-md shadow-purple-600/30">
+              <Tag className="h-3.5 w-3.5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-white/80">ShopScribe</span>
+            <span className="text-sm font-semibold text-white/80 tracking-tight">ShopScribe</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/dashboard">

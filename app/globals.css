@@ -38,25 +38,29 @@
 }
 
 :root {
-  --background: oklch(0.07 0.01 265);
+  --background: oklch(0.065 0.012 265);
   --foreground: oklch(0.97 0 0);
-  --card: oklch(0.1 0.01 265);
+  --card: oklch(0.10 0.012 265);
   --card-foreground: oklch(0.97 0 0);
-  --popover: oklch(0.1 0.01 265);
+  --popover: oklch(0.10 0.012 265);
   --popover-foreground: oklch(0.97 0 0);
-  --primary: oklch(0.65 0.22 290);
+  --primary: oklch(0.63 0.24 290);
   --primary-foreground: oklch(0.97 0 0);
-  --secondary: oklch(0.15 0.015 265);
+  --secondary: oklch(0.14 0.016 265);
   --secondary-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.15 0.015 265);
-  --muted-foreground: oklch(0.6 0.02 265);
-  --accent: oklch(0.65 0.22 290);
+  --muted: oklch(0.14 0.016 265);
+  --muted-foreground: oklch(0.58 0.02 265);
+  --accent: oklch(0.63 0.24 290);
   --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.2 0.015 265);
-  --input: oklch(0.15 0.015 265);
-  --ring: oklch(0.65 0.22 290);
+  --border: oklch(0.19 0.014 265);
+  --input: oklch(0.14 0.016 265);
+  --ring: oklch(0.63 0.24 290);
   --radius: 0.75rem;
+
+  /* Success color token */
+  --success: oklch(0.65 0.18 145);
+  --success-foreground: oklch(0.97 0 0);
 }
 
 @layer base {
@@ -72,11 +76,11 @@
   }
   h1, h2, h3 {
     font-family: var(--font-cal), var(--font-inter), sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
   }
 }
 
-/* Orbes animées */
+/* ─── Orbes animées ─────────────────────────────────────────────────────────── */
 @keyframes orb-float-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(40px, -60px) scale(1.1); }
@@ -96,7 +100,7 @@
 .orb-2 { animation: orb-float-2 24s ease-in-out infinite; }
 .orb-3 { animation: orb-float-3 20s ease-in-out infinite; }
 
-/* Shimmer badge */
+/* ─── Shimmer badge ─────────────────────────────────────────────────────────── */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
@@ -104,22 +108,32 @@
 .shimmer {
   background: linear-gradient(
     90deg,
-    oklch(0.65 0.22 290 / 0.3) 0%,
-    oklch(0.75 0.18 320 / 0.6) 50%,
-    oklch(0.65 0.22 290 / 0.3) 100%
+    oklch(0.63 0.24 290 / 0.25) 0%,
+    oklch(0.78 0.18 320 / 0.55) 50%,
+    oklch(0.63 0.24 290 / 0.25) 100%
   );
   background-size: 200% auto;
   animation: shimmer 3s linear infinite;
 }
 
-/* Glow pulse sur le CTA */
+/* ─── Glow pulse CTA ────────────────────────────────────────────────────────── */
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px oklch(0.65 0.22 290 / 0.4), 0 0 40px oklch(0.65 0.22 290 / 0.2); }
-  50% { box-shadow: 0 0 30px oklch(0.65 0.22 290 / 0.7), 0 0 60px oklch(0.65 0.22 290 / 0.35); }
+  0%, 100% {
+    box-shadow:
+      0 0 18px oklch(0.63 0.24 290 / 0.45),
+      0 0 38px oklch(0.63 0.24 290 / 0.20),
+      inset 0 1px 0 oklch(1 0 0 / 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 28px oklch(0.63 0.24 290 / 0.70),
+      0 0 56px oklch(0.63 0.24 290 / 0.32),
+      inset 0 1px 0 oklch(1 0 0 / 0.18);
+  }
 }
 .glow-btn { animation: glow-pulse 2.5s ease-in-out infinite; }
 
-/* Ticker */
+/* ─── Ticker ────────────────────────────────────────────────────────────────── */
 @keyframes ticker {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -127,55 +141,99 @@
 .ticker-wrap {
   overflow: hidden;
   width: 100%;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
 }
-.ticker-inner { animation: ticker 25s linear infinite; }
+.ticker-inner { animation: ticker 28s linear infinite; }
 .ticker-inner:hover { animation-play-state: paused; }
 
-/* Noise overlay */
+/* ─── Noise overlay ─────────────────────────────────────────────────────────── */
 .noise::after {
   content: '';
   position: fixed;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.025;
+  opacity: 0.018;
   pointer-events: none;
   z-index: 9999;
 }
 
-/* Glassmorphism nav */
+/* ─── Glassmorphism nav ─────────────────────────────────────────────────────── */
 .glass-nav {
-  background: oklch(0.07 0.01 265 / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid oklch(1 0 0 / 0.06);
+  background: oklch(0.065 0.012 265 / 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid oklch(1 0 0 / 0.055);
+  box-shadow: 0 1px 0 0 oklch(0 0 0 / 0.2);
 }
 
-/* Card hover */
+/* ─── Card hover ────────────────────────────────────────────────────────────── */
 .card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.21, 0.47, 0.32, 0.98),
+              box-shadow 0.25s cubic-bezier(0.21, 0.47, 0.32, 0.98),
+              border-color 0.25s ease;
 }
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px oklch(0 0 0 / 0.4);
-  border-color: oklch(0.65 0.22 290 / 0.4);
+  transform: translateY(-5px);
+  box-shadow:
+    0 24px 48px oklch(0 0 0 / 0.45),
+    0 0 0 1px oklch(0.63 0.24 290 / 0.12);
+  border-color: oklch(0.63 0.24 290 / 0.35);
 }
 
-/* Gradient text animé */
+/* ─── Gradient text animé ───────────────────────────────────────────────────── */
 @keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa, #f472b6, #818cf8, #a78bfa);
+  background: linear-gradient(135deg, #a855f7, #ec4899, #6366f1, #c026d3, #a855f7);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-shift 6s ease infinite;
+  animation: gradient-shift 5s ease infinite;
 }
 
-/* Scrollbar custom */
+/* ─── Section divider glow ──────────────────────────────────────────────────── */
+.section-alt {
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.63 0.24 290 / 0.04) 0%, transparent 70%);
+}
+
+/* ─── Highlight pricing card ────────────────────────────────────────────────── */
+.pricing-highlight {
+  background:
+    linear-gradient(160deg, oklch(0.63 0.24 290 / 0.12) 0%, oklch(0.55 0.20 270 / 0.06) 100%);
+  border-color: oklch(0.63 0.24 290 / 0.50);
+  box-shadow:
+    0 0 0 1px oklch(0.63 0.24 290 / 0.20),
+    0 20px 40px oklch(0.63 0.24 290 / 0.12),
+    inset 0 1px 0 oklch(1 0 0 / 0.06);
+}
+
+/* ─── Icon gradient wrapper ─────────────────────────────────────────────────── */
+.icon-glow {
+  background: radial-gradient(circle at center, oklch(0.63 0.24 290 / 0.25) 0%, oklch(0.63 0.24 290 / 0.08) 100%);
+  border-color: oklch(0.63 0.24 290 / 0.25);
+  box-shadow: 0 0 12px oklch(0.63 0.24 290 / 0.15);
+}
+
+/* ─── Subtle grid pattern ───────────────────────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(oklch(1 0 0 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(1 0 0 / 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Scrollbar custom ──────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: oklch(0.07 0.01 265); }
-::-webkit-scrollbar-thumb { background: oklch(0.25 0.02 265); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: oklch(0.65 0.22 290 / 0.6); }
+::-webkit-scrollbar-track { background: oklch(0.065 0.012 265); }
+::-webkit-scrollbar-thumb { background: oklch(0.22 0.02 265); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.63 0.24 290 / 0.6); }
+
+/* ─── Selection ─────────────────────────────────────────────────────────────── */
+::selection {
+  background: oklch(0.63 0.24 290 / 0.35);
+  color: oklch(0.97 0 0);
+}

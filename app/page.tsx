@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { FadeIn, StaggerContainer, StaggerItem, ScaleIn } from '@/components/animations'
+import {
+  FadeIn, StaggerContainer, StaggerItem, ScaleIn,
+  SlideIn, TextReveal, AnimatedBadge, GlowPulse, CountUp, RevealLine
+} from '@/components/animations'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -85,46 +88,61 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden noise">
+    <div className="min-h-screen bg-[#080810] text-white overflow-hidden noise bg-grid">
 
       {/* Orbes de fond */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="orb-1 absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-purple-600/10 blur-[120px]" />
-        <div className="orb-2 absolute top-[30%] right-[-15%] w-[500px] h-[500px] rounded-full bg-indigo-500/8 blur-[100px]" />
-        <div className="orb-3 absolute bottom-[-10%] left-[30%] w-[400px] h-[400px] rounded-full bg-pink-600/8 blur-[100px]" />
+        <div className="orb-1 absolute top-[-15%] left-[-8%] w-[700px] h-[700px] rounded-full bg-purple-600/12 blur-[130px]" />
+        <div className="orb-2 absolute top-[25%] right-[-12%] w-[550px] h-[550px] rounded-full bg-indigo-500/10 blur-[110px]" />
+        <div className="orb-3 absolute bottom-[-8%] left-[25%] w-[450px] h-[450px] rounded-full bg-pink-600/8 blur-[110px]" />
       </div>
 
       {/* Navbar */}
       <motion.nav
-        className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4"
+        className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3.5"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
+        transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
+          <motion.div
+            className="flex items-center gap-2.5"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-600/30">
               <Tag className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/pricing" className="text-sm text-white/50 hover:text-white transition-colors">Tarifs</Link>
-            <Link href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Fonctionnalités</Link>
-          </div>
-          <div className="hidden md:flex items-center gap-3">
+            <span className="text-base font-semibold tracking-tight">ShopScribe</span>
+          </motion.div>
+          <motion.div
+            className="hidden md:flex items-center gap-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Link href="/pricing" className="text-sm text-white/45 hover:text-white/90 transition-colors duration-200">Tarifs</Link>
+            <Link href="#features" className="text-sm text-white/45 hover:text-white/90 transition-colors duration-200">Fonctionnalités</Link>
+          </motion.div>
+          <motion.div
+            className="hidden md:flex items-center gap-3"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             {sessionLoading ? (
               <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
             ) : isLoggedIn ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
+                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm gap-2 rounded-xl">
                     <LayoutDashboard className="h-4 w-4" />
                     Tableau de bord
                   </Button>
                 </Link>
                 <Link href="/account">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25 gap-2">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30 gap-2">
                     <User className="h-4 w-4" />
                     Mon compte
                   </Button>
@@ -133,93 +151,130 @@ export default function HomePage() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
+                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm rounded-xl">
                     Connexion
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/25">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30">
                     Essayer gratuitement
                   </Button>
                 </Link>
               </>
             )}
-          </div>
-          {/* Mobile: hamburger */}
+          </motion.div>
           <MobileMenu isLoggedIn={isLoggedIn} />
         </div>
       </motion.nav>
 
-      {/* Hero */}
-      <section className="relative pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 text-center">
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <section className="relative pt-36 sm:pt-44 pb-16 sm:pb-24 px-4 sm:px-6 text-center">
         <div className="max-w-4xl mx-auto">
 
-          {/* Badge shimmer */}
-          <FadeIn delay={0.1}>
-            <div className="inline-flex items-center gap-2 mb-6 sm:mb-8 px-3 sm:px-4 py-2 rounded-full border border-purple-500/30 shimmer">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-              <span className="text-xs sm:text-sm text-purple-300 font-medium">Propulsé par GPT-4o · Bilingue FR / EN</span>
+          {/* Badge — bounce spring */}
+          <AnimatedBadge delay={0.1}>
+            <div className="inline-flex items-center gap-2 mb-7 sm:mb-9 px-4 py-2 rounded-full border border-purple-500/25 shimmer">
+              <Sparkles className="h-3.5 w-3.5 text-purple-300 shrink-0" />
+              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par GPT-4o · Bilingue FR / EN</span>
             </div>
-          </FadeIn>
+          </AnimatedBadge>
 
-          {/* Titre */}
-          <FadeIn delay={0.2}>
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-semibold leading-[1.05] mb-4 sm:mb-6 tracking-tight">
-              Vos fiches produits{' '}
-              <span className="gradient-text">en 10 secondes</span>
+          {/* Titre — chaque mot apparaît en cascade avec blur */}
+          <div className="mb-5 sm:mb-7">
+            <h1 className="text-4xl sm:text-6xl md:text-[4.5rem] font-heading font-semibold leading-[1.05] tracking-tight">
+              <TextReveal text="Vos fiches produits" delay={0.15} />
+              {' '}
+              <motion.span
+                className="gradient-text"
+                style={{ display: 'inline-block' }}
+                initial={{ opacity: 0, y: 28, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 0.7, delay: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
+              >
+                en 10 secondes
+              </motion.span>
             </h1>
-          </FadeIn>
+          </div>
 
           {/* Sous-titre */}
-          <FadeIn delay={0.3}>
-            <p className="text-base sm:text-xl text-white/50 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
+          <FadeIn delay={0.55} blur>
+            <p className="text-base sm:text-xl text-white/55 mb-9 sm:mb-11 max-w-2xl mx-auto leading-relaxed px-2">
               Générez des titres accrocheurs, descriptions SEO, bullet points et méta-descriptions
               prêts à coller sur Shopify, Etsy ou Amazon.
             </p>
           </FadeIn>
 
           {/* CTAs */}
-          <FadeIn delay={0.4}>
+          <FadeIn delay={0.65} direction="up" blur>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0">
               <Link href="/dashboard" className="w-full sm:w-auto">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button
                     size="lg"
-                    className="glow-btn bg-purple-600 hover:bg-purple-500 text-white w-full sm:w-auto px-8 h-12 rounded-xl gap-2 text-base font-medium"
+                    className="glow-btn bg-purple-600 hover:bg-purple-500 text-white w-full sm:w-auto px-8 h-13 rounded-xl gap-2 text-base font-medium transition-colors duration-200"
                   >
                     Générer ma première fiche
-                    <ArrowRight className="h-4 w-4" />
+                    <motion.span
+                      animate={{ x: [0, 4, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.span>
                   </Button>
                 </motion.div>
               </Link>
               <Link href="/pricing" className="w-full sm:w-auto">
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="text-white/60 hover:text-white hover:bg-white/5 w-full sm:w-auto px-8 h-12 rounded-xl text-base"
-                >
-                  Voir les tarifs
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="text-white/55 hover:text-white/90 hover:bg-white/[0.06] w-full sm:w-auto px-8 h-13 rounded-xl text-base border border-white/[0.07] hover:border-white/10 transition-all duration-200"
+                  >
+                    Voir les tarifs
+                  </Button>
+                </motion.div>
               </Link>
             </div>
-            <p className="mt-4 text-white/30 text-sm">3 générations gratuites · Aucune carte requise</p>
+            <motion.p
+              className="mt-5 text-white/28 text-sm tracking-wide"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+            >
+              3 générations gratuites · Aucune carte requise
+            </motion.p>
           </FadeIn>
 
           {/* Social proof */}
-          <FadeIn delay={0.5}>
-            <div className="flex items-center justify-center gap-3 mt-8 sm:mt-10 flex-wrap">
-              <div className="flex -space-x-2">
-                {avatars.map((a) => (
-                  <div key={a} className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 border-2 border-[#0a0a0f] flex items-center justify-center text-xs font-semibold text-white">
+          <FadeIn delay={0.8} direction="up" blur>
+            <div className="flex items-center justify-center gap-3 mt-10 sm:mt-12 flex-wrap">
+              <div className="flex -space-x-2.5">
+                {avatars.map((a, i) => (
+                  <motion.div
+                    key={a}
+                    className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 border-2 border-[#080810] flex items-center justify-center text-[10px] font-semibold text-white shadow-sm"
+                    initial={{ opacity: 0, scale: 0, x: -8 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{ delay: 0.85 + i * 0.07, type: 'spring', stiffness: 300, damping: 18 }}
+                  >
                     {a}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />)}
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.1 + i * 0.06, type: 'spring', stiffness: 400 }}
+                    >
+                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                    </motion.span>
+                  ))}
                 </div>
-                <span className="text-white/50 text-sm">+500 vendeurs l&apos;utilisent déjà</span>
+                <span className="text-white/45 text-sm">+500 vendeurs l&apos;utilisent déjà</span>
               </div>
             </div>
           </FadeIn>
@@ -227,21 +282,21 @@ export default function HomePage() {
 
         {/* Scroll indicator */}
         <motion.div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/20"
-          animate={{ y: [0, 8, 0] }}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/18"
+          animate={{ y: [0, 8, 0], opacity: [0.4, 0.8, 0.4] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
           <ChevronDown className="h-5 w-5" />
         </motion.div>
       </section>
 
-      {/* Ticker */}
-      <div className="relative py-4 border-y border-white/5">
+      {/* ── Ticker ───────────────────────────────────────────────────────────── */}
+      <div className="relative py-4 border-y border-white/[0.045]">
         <div className="ticker-wrap">
           <div className="flex gap-8 ticker-inner whitespace-nowrap">
             {tickerItems.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-white/30 shrink-0">
-                <Zap className="h-3 w-3 text-purple-500/60 shrink-0" />
+              <div key={i} className="flex items-center gap-3 text-sm text-white/28 shrink-0">
+                <Zap className="h-3 w-3 text-purple-500/50 shrink-0" />
                 <span>{item}</span>
               </div>
             ))}
@@ -249,148 +304,187 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <section className="px-4 sm:px-6 py-14 sm:py-20">
+      {/* ── Stats ────────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-22 section-alt">
         <div className="max-w-4xl mx-auto">
-          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4" staggerDelay={0.15}>
             {[
-              { icon: Clock, value: '10 sec', label: 'par fiche produit' },
-              { icon: TrendingUp, value: '+40%', label: 'de taux de conversion' },
-              { icon: Globe, value: 'FR & EN', label: 'bilingue nativement' },
-            ].map(({ icon: Icon, value, label }) => (
+              { icon: Clock, value: 10, suffix: ' sec', label: 'par fiche produit', color: 'text-purple-400', prefix: '' },
+              { icon: TrendingUp, value: 40, suffix: '%', label: 'de taux de conversion', color: 'text-indigo-400', prefix: '+' },
+              { icon: Globe, value: 2, suffix: ' langues', label: 'FR & EN nativement', color: 'text-pink-400', prefix: '' },
+            ].map(({ icon: Icon, value, suffix, prefix, label, color }) => (
               <StaggerItem key={label}>
-                <div className="p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-center hover:border-purple-500/30 transition-colors card-hover flex sm:block items-center gap-4">
-                  <Icon className="h-5 w-5 text-purple-400 shrink-0 sm:mx-auto sm:mb-3" />
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-heading font-semibold text-white mb-0.5 sm:mb-1">{value}</div>
-                    <div className="text-white/40 text-sm">{label}</div>
+                <motion.div
+                  className="p-6 sm:p-7 rounded-2xl bg-white/[0.035] border border-white/[0.07] text-center hover:border-purple-500/30 transition-all duration-300 card-hover flex sm:block items-center gap-4"
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                >
+                  <div className="w-10 h-10 rounded-xl icon-glow border flex items-center justify-center shrink-0 sm:mx-auto sm:mb-4">
+                    <Icon className={`h-5 w-5 ${color}`} />
                   </div>
-                </div>
+                  <div>
+                    <div className="text-3xl sm:text-4xl font-heading font-semibold text-white mb-1">
+                      <CountUp value={value} suffix={suffix} prefix={prefix} duration={1.2} />
+                    </div>
+                    <div className="text-white/42 text-sm">{label}</div>
+                  </div>
+                </motion.div>
               </StaggerItem>
             ))}
           </StaggerContainer>
         </div>
       </section>
 
-      {/* Before / After */}
-      <section className="px-4 sm:px-6 py-14 sm:py-20">
+      {/* ── Before / After ───────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto">
-          <FadeIn>
-            <div className="text-center mb-10 sm:mb-14">
-              <Badge className="mb-4 bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs px-3 py-1">
-                Résultat concret
-              </Badge>
+          <FadeIn blur>
+            <div className="text-center mb-12 sm:mb-16">
+              <AnimatedBadge>
+                <Badge className="mb-4 bg-purple-500/10 text-purple-300 border-purple-500/20 text-xs px-3 py-1 rounded-full">
+                  Résultat concret
+                </Badge>
+              </AnimatedBadge>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4">
-                Avant vs Après
+                <TextReveal text="Avant vs Après" />
               </h2>
-              <p className="text-white/40 text-base sm:text-lg max-w-xl mx-auto">
+              <p className="text-white/42 text-base sm:text-lg max-w-xl mx-auto">
                 Collez un nom de produit, obtenez une fiche complète et professionnelle.
               </p>
             </div>
           </FadeIn>
 
           <div className="grid md:grid-cols-2 gap-4">
-            {/* Avant */}
-            <ScaleIn delay={0.1}>
-              <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] h-full">
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="text-sm text-white/40 font-medium">Avant ShopScribe</span>
+            {/* Avant — slide depuis la gauche */}
+            <SlideIn from="left" delay={0.1}>
+              <div className="p-6 sm:p-7 rounded-2xl bg-white/[0.025] border border-white/[0.06] h-full">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-2 h-2 rounded-full bg-red-500/80" />
+                  <span className="text-sm text-white/38 font-medium">Avant ShopScribe</span>
                 </div>
                 <div className="space-y-3">
-                  <div className="text-white/30 text-sm">Nom du produit :</div>
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.04] text-white/60 text-sm font-mono">
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium">Nom du produit</div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-white/55 text-sm font-mono">
                     Sac à dos imperméable 30L
                   </div>
-                  <div className="text-white/30 text-sm mt-4">Description :</div>
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.04] text-white/30 text-sm italic">
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-5">Description</div>
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-white/28 text-sm italic leading-relaxed">
                     Sac à dos imperméable, grande capacité, idéal pour la randonnée.
                     Disponible en plusieurs couleurs.
                   </div>
-                  <div className="pt-2 text-red-400/60 text-xs">❌ Peu de mots-clés · Pas de SEO · Faible conversion</div>
+                  <div className="pt-3 flex items-center gap-2 text-red-400/55 text-xs">
+                    <span>✗</span>
+                    <span>Peu de mots-clés · Pas de SEO · Faible conversion</span>
+                  </div>
                 </div>
               </div>
-            </ScaleIn>
+            </SlideIn>
 
-            {/* Après */}
-            <ScaleIn delay={0.2}>
-              <div className="p-6 rounded-2xl bg-purple-600/5 border border-purple-500/20 h-full relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
-                  <span className="text-sm text-purple-300 font-medium">Après ShopScribe</span>
-                </div>
-                <div className="space-y-3 relative">
-                  <div className="text-white/40 text-xs font-medium uppercase tracking-wide">Titre SEO</div>
-                  <div className="text-white text-sm font-semibold">
-                    Sac à Dos Imperméable 30L — Randonnée & Voyage | Ultra-Léger, Résistant
+            {/* Après — slide depuis la droite avec GlowPulse */}
+            <SlideIn from="right" delay={0.2}>
+              <GlowPulse delay={0.5}>
+                <div className="p-6 sm:p-7 rounded-2xl border h-full relative overflow-hidden pricing-highlight">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/8 via-transparent to-indigo-600/5 pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
+                  <div className="flex items-center gap-2 mb-6 relative">
+                    <div className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-sm text-purple-200/90 font-medium">Après ShopScribe</span>
                   </div>
-                  <div className="text-white/40 text-xs font-medium uppercase tracking-wide mt-3">Description</div>
-                  <div className="text-white/70 text-sm leading-relaxed">
-                    Conçu pour les aventuriers exigeants, ce sac à dos imperméable 30L offre une capacité généreuse dans un format compact et ultra-léger...
+                  <div className="space-y-3 relative">
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide">Titre SEO</div>
+                    <div className="text-white text-sm font-semibold leading-snug">
+                      Sac à Dos Imperméable 30L — Randonnée & Voyage | Ultra-Léger, Résistant
+                    </div>
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-4">Description</div>
+                    <div className="text-white/65 text-sm leading-relaxed">
+                      Conçu pour les aventuriers exigeants, ce sac à dos imperméable 30L offre une capacité généreuse dans un format compact et ultra-léger...
+                    </div>
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-4">Points clés</div>
+                    <ul className="space-y-1.5">
+                      {['Imperméabilité certifiée IPX6', 'Sangle ergonomique lombaire', 'Matière recyclée et durable'].map((p, i) => (
+                        <motion.li
+                          key={p}
+                          className="flex gap-2 text-white/60 text-xs items-center"
+                          initial={{ opacity: 0, x: -12 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.5 + i * 0.1, duration: 0.4 }}
+                        >
+                          <span className="text-purple-400 text-base leading-none">✓</span> {p}
+                        </motion.li>
+                      ))}
+                    </ul>
+                    <div className="pt-3 flex items-center gap-2 text-green-400/65 text-xs">
+                      <span>✓</span>
+                      <span>SEO optimisé · Conversion élevée · Prêt à publier</span>
+                    </div>
                   </div>
-                  <div className="text-white/40 text-xs font-medium uppercase tracking-wide mt-3">Points clés</div>
-                  <ul className="space-y-1">
-                    {['Imperméabilité certifiée IPX6', 'Sangle ergonomique lombaire', 'Matière recyclée et durable'].map(p => (
-                      <li key={p} className="flex gap-2 text-white/60 text-xs">
-                        <span className="text-purple-400">✓</span> {p}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="pt-2 text-green-400/70 text-xs">✓ SEO optimisé · Conversion élevée · Prêt à publier</div>
                 </div>
-              </div>
-            </ScaleIn>
+              </GlowPulse>
+            </SlideIn>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="px-4 sm:px-6 py-14 sm:py-20">
+      {/* ── Features ─────────────────────────────────────────────────────────── */}
+      <section id="features" className="px-4 sm:px-6 py-16 sm:py-24 section-alt">
         <div className="max-w-6xl mx-auto">
-          <FadeIn>
-            <div className="text-center mb-10 sm:mb-14">
-              <Badge className="mb-4 bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs px-3 py-1">
-                Fonctionnalités
-              </Badge>
+          <FadeIn blur>
+            <div className="text-center mb-12 sm:mb-16">
+              <AnimatedBadge>
+                <Badge className="mb-4 bg-purple-500/10 text-purple-300 border-purple-500/20 text-xs px-3 py-1 rounded-full">
+                  Fonctionnalités
+                </Badge>
+              </AnimatedBadge>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4">
-                Tout ce dont vous avez besoin
+                <TextReveal text="Tout ce dont vous avez besoin" />
               </h2>
-              <p className="text-white/40 text-base sm:text-lg max-w-xl mx-auto">
+              <p className="text-white/42 text-base sm:text-lg max-w-xl mx-auto">
                 Une fiche complète générée en une seule fois. Rien à configurer.
               </p>
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          <StaggerContainer className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4" staggerDelay={0.08}>
             {features.map(({ icon: Icon, title, desc }) => (
               <StaggerItem key={title}>
-                <div className="p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] card-hover h-full">
-                  <div className="w-10 h-10 rounded-xl bg-purple-600/15 border border-purple-500/20 flex items-center justify-center mb-4">
+                <motion.div
+                  className="p-6 sm:p-7 rounded-2xl bg-white/[0.03] border border-white/[0.065] h-full group transition-all duration-300"
+                  whileHover={{
+                    y: -6,
+                    borderColor: 'rgba(139,92,246,0.35)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                    transition: { duration: 0.2 },
+                  }}
+                >
+                  <motion.div
+                    className="w-11 h-11 rounded-xl icon-glow border flex items-center justify-center mb-5"
+                    whileHover={{ scale: 1.15, rotate: 5 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                  >
                     <Icon className="h-5 w-5 text-purple-400" />
-                  </div>
-                  <h3 className="font-semibold text-white mb-2">{title}</h3>
-                  <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
-                </div>
+                  </motion.div>
+                  <h3 className="font-semibold text-white mb-2.5 text-[15px]">{title}</h3>
+                  <p className="text-white/42 text-sm leading-relaxed">{desc}</p>
+                </motion.div>
               </StaggerItem>
             ))}
           </StaggerContainer>
         </div>
       </section>
 
-      {/* Pricing teaser */}
-      <section className="px-4 sm:px-6 py-14 sm:py-20">
+      {/* ── Pricing teaser ───────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto">
-          <FadeIn>
-            <div className="text-center mb-10 sm:mb-12">
+          <FadeIn blur>
+            <div className="text-center mb-12 sm:mb-14">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4">
-                Tarifs simples
+                <TextReveal text="Tarifs simples" />
               </h2>
-              <p className="text-white/40 text-base sm:text-lg">Commencez gratuitement, évoluez sans friction.</p>
+              <p className="text-white/42 text-base sm:text-lg">Commencez gratuitement, évoluez sans friction.</p>
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" staggerDelay={0.1}>
             {[
               { name: 'Gratuit', price: '0€', desc: '', features: ['3 fiches', 'FR & EN', 'Tous les champs'], highlight: false },
               { name: 'Starter', price: '9€', desc: 'paiement unique', features: ['25 fiches', 'FR & EN', 'Tous les champs', 'Historique'], highlight: false },
@@ -398,80 +492,133 @@ export default function HomePage() {
               { name: 'Business', price: '59€', desc: 'paiement unique', features: ['500 fiches', 'Ton personnalisé', 'Upload en masse', 'Support prioritaire'], highlight: false },
             ].map(({ name, price, desc, features, highlight }) => (
               <StaggerItem key={name}>
-                <div className={`p-5 sm:p-6 rounded-2xl border h-full flex flex-col card-hover ${highlight ? 'bg-purple-600/10 border-purple-500/40' : 'bg-white/[0.03] border-white/[0.06]'}`}>
+                <motion.div
+                  className={`p-5 sm:p-6 rounded-2xl border h-full flex flex-col relative overflow-hidden transition-all duration-300 ${highlight ? 'pricing-highlight' : 'bg-white/[0.03] border-white/[0.065]'}`}
+                  whileHover={{
+                    y: -5,
+                    transition: { duration: 0.2 },
+                  }}
+                >
                   {highlight && (
-                    <div className="text-xs text-purple-400 font-medium mb-3 uppercase tracking-wide">⚡ Le plus populaire</div>
+                    <>
+                      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
+                      <div className="flex items-center gap-1.5 text-xs text-purple-300 font-medium mb-4">
+                        <Zap className="h-3 w-3 fill-purple-400 text-purple-400" />
+                        Le plus populaire
+                      </div>
+                    </>
                   )}
-                  <div className="mb-4">
-                    <div className="text-white/50 text-sm mb-1">{name}</div>
-                    <div className="flex items-baseline gap-1">
+                  <div className="mb-5">
+                    <div className={`text-sm mb-1.5 font-medium ${highlight ? 'text-white/80' : 'text-white/45'}`}>{name}</div>
+                    <div className="flex items-baseline gap-1.5">
                       <span className="text-3xl font-heading font-semibold text-white">{price}</span>
-                      <span className="text-white/30 text-sm">{desc}</span>
+                      <span className="text-white/28 text-xs">{desc}</span>
                     </div>
                   </div>
-                  <ul className="space-y-2 flex-1 mb-6">
-                    {features.map(f => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-white/50">
-                        <CheckCircle className={`h-3.5 w-3.5 shrink-0 ${highlight ? 'text-purple-400' : 'text-white/30'}`} />
+                  <ul className="space-y-2.5 flex-1 mb-6">
+                    {features.map((f, i) => (
+                      <motion.li
+                        key={f}
+                        className="flex items-center gap-2 text-sm text-white/52"
+                        initial={{ opacity: 0, x: -8 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 + i * 0.07 }}
+                      >
+                        <CheckCircle className={`h-3.5 w-3.5 shrink-0 ${highlight ? 'text-purple-400' : 'text-white/25'}`} />
                         {f}
-                      </li>
+                      </motion.li>
                     ))}
                   </ul>
                   <Link href="/signup">
-                    <Button className={`w-full rounded-xl ${highlight ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-white/5 hover:bg-white/10 text-white/70'}`}>
+                    <Button className={`w-full rounded-xl font-medium transition-all duration-200 ${highlight ? 'bg-purple-600 hover:bg-purple-500 text-white hover:shadow-lg hover:shadow-purple-600/25' : 'bg-white/[0.06] hover:bg-white/[0.10] text-white/60 hover:text-white/85 border border-white/[0.08]'}`}>
                       Commencer
+                      {highlight && <ArrowRight className="h-3.5 w-3.5 ml-1" />}
                     </Button>
                   </Link>
-                </div>
+                </motion.div>
               </StaggerItem>
             ))}
           </StaggerContainer>
-        </div>
-      </section>
 
-      {/* CTA final */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24">
-        <div className="max-w-3xl mx-auto text-center">
-          <FadeIn>
-            <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-br from-purple-600/15 to-indigo-600/10 border border-purple-500/20 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent pointer-events-none" />
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4 relative">
-                Prêt à gagner du temps ?
-              </h2>
-              <p className="text-white/50 mb-8 text-base sm:text-lg relative max-w-lg mx-auto">
-                Rejoignez les vendeurs qui génèrent leurs fiches en secondes, pas en heures.
-              </p>
-              <Link href="/signup" className="inline-block w-full sm:w-auto">
-                <motion.div className="inline-block w-full sm:w-auto" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button
-                    size="lg"
-                    className="glow-btn bg-purple-600 hover:bg-purple-500 text-white w-full sm:w-auto px-10 h-12 rounded-xl gap-2 text-base font-medium relative"
-                  >
-                    Commencer gratuitement
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </motion.div>
+          <FadeIn delay={0.4}>
+            <p className="text-center mt-8 text-white/28 text-sm">
+              <Link href="/pricing" className="hover:text-white/55 transition-colors underline underline-offset-4 decoration-white/15">
+                Voir le détail des plans →
               </Link>
-              <p className="mt-4 text-white/25 text-sm">Aucune carte requise · Annulation à tout moment</p>
-            </div>
+            </p>
           </FadeIn>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] px-4 sm:px-6 py-8">
+      {/* ── CTA final ────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-28">
+        <div className="max-w-3xl mx-auto text-center">
+          <ScaleIn>
+            <div className="relative p-10 sm:p-14 rounded-3xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-indigo-600/12 to-pink-600/8 rounded-3xl" />
+              <div className="absolute inset-0 border border-purple-500/25 rounded-3xl" />
+              <div className="absolute inset-[1px] border border-white/[0.04] rounded-3xl" />
+              <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+              <div className="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-purple-600/15 blur-[80px] pointer-events-none" />
+
+              <div className="relative">
+                <AnimatedBadge delay={0.1}>
+                  <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium">
+                    <Sparkles className="h-3 w-3" />
+                    Prêt en 10 secondes
+                  </div>
+                </AnimatedBadge>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-5">
+                  <TextReveal text="Prêt à gagner du temps ?" delay={0.1} />
+                </h2>
+
+                <FadeIn delay={0.3} blur>
+                  <p className="text-white/52 mb-9 text-base sm:text-lg max-w-lg mx-auto leading-relaxed">
+                    Rejoignez les vendeurs qui génèrent leurs fiches en secondes, pas en heures.
+                  </p>
+                </FadeIn>
+
+                <FadeIn delay={0.4}>
+                  <Link href="/signup" className="inline-block w-full sm:w-auto">
+                    <motion.div className="inline-block w-full sm:w-auto" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+                      <Button
+                        size="lg"
+                        className="glow-btn bg-purple-600 hover:bg-purple-500 text-white w-full sm:w-auto px-10 h-13 rounded-xl gap-2 text-base font-medium transition-colors duration-200"
+                      >
+                        Commencer gratuitement
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </motion.span>
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <p className="mt-5 text-white/25 text-sm">Aucune carte requise · Annulation à tout moment</p>
+                </FadeIn>
+              </div>
+            </div>
+          </ScaleIn>
+        </div>
+      </section>
+
+      {/* ── Footer ───────────────────────────────────────────────────────────── */}
+      <footer className="border-t border-white/[0.055] px-4 sm:px-6 py-8">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-purple-600 flex items-center justify-center">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
               <Tag className="h-3 w-3 text-white" />
             </div>
-            <span className="text-white/70 font-medium text-sm">ShopScribe</span>
+            <span className="text-white/65 font-medium text-sm tracking-tight">ShopScribe</span>
           </div>
-          <p className="text-white/20 text-xs">© 2025 ShopScribe. Tous droits réservés.</p>
+          <p className="text-white/22 text-xs">© {new Date().getFullYear()} ShopScribe. Tous droits réservés.</p>
           <div className="flex gap-6 text-xs text-white/30">
-            <Link href="/pricing" className="hover:text-white/70 transition-colors">Tarifs</Link>
-            <Link href="/login" className="hover:text-white/70 transition-colors">Connexion</Link>
-            <Link href="/signup" className="hover:text-white/70 transition-colors">S&apos;inscrire</Link>
+            <Link href="/pricing" className="hover:text-white/65 transition-colors">Tarifs</Link>
+            <Link href="/login" className="hover:text-white/65 transition-colors">Connexion</Link>
+            <Link href="/signup" className="hover:text-white/65 transition-colors">S&apos;inscrire</Link>
           </div>
         </div>
       </footer>

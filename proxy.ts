@@ -32,8 +32,11 @@ export async function proxy(request: NextRequest) {
     ]) as Awaited<ReturnType<typeof supabase.auth.getUser>>
     user = result.data.user
   } catch {
-    // On timeout or network error: allow public pages, block /dashboard
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    // On timeout or network error: allow public pages, block /dashboard and /account
+    if (
+      request.nextUrl.pathname.startsWith('/dashboard') ||
+      request.nextUrl.pathname.startsWith('/account')
+    ) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
@@ -41,15 +44,22 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Protect dashboard routes
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Protect dashboard and account routes
+  if (
+    !user &&
+    (request.nextUrl.pathname.startsWith('/dashboard') ||
+      request.nextUrl.pathname.startsWith('/account'))
+  ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
   // Redirect logged-in users away from auth pages
-  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')) {
+  if (
+    user &&
+    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
+  ) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

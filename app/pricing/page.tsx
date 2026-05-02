@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Zap, CheckCircle, ArrowRight, LayoutDashboard, User } from 'lucide-react'
+import { Zap, CheckCircle, ArrowRight, LayoutDashboard, User, Tag } from 'lucide-react'
+import { FadeIn, StaggerContainer, StaggerItem, AnimatedBadge, TextReveal, GlowPulse } from '@/components/animations'
 import { createClient } from '@/lib/supabase/client'
 
 const plans = [
@@ -128,21 +129,21 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
+    <div className="min-h-screen bg-[#080810] text-white overflow-hidden noise bg-grid">
       {/* Orbes */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="orb-1 absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-purple-600/8 blur-[120px]" />
-        <div className="orb-2 absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-500/6 blur-[100px]" />
+        <div className="orb-1 absolute top-[-20%] left-[-10%] w-[550px] h-[550px] rounded-full bg-purple-600/10 blur-[130px]" />
+        <div className="orb-2 absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-indigo-500/8 blur-[110px]" />
       </div>
 
       {/* Navbar */}
-      <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4">
+      <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-600/30">
+              <Tag className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">ShopScribe</span>
+            <span className="text-base font-semibold tracking-tight">ShopScribe</span>
           </Link>
           <div className="hidden sm:flex items-center gap-3">
             {sessionLoading ? (
@@ -150,13 +151,13 @@ export default function PricingPage() {
             ) : isLoggedIn ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm gap-2">
+                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm gap-2 rounded-xl">
                     <LayoutDashboard className="h-4 w-4" />
                     Tableau de bord
                   </Button>
                 </Link>
                 <Link href="/account">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl gap-2">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl gap-2 transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30">
                     <User className="h-4 w-4" />
                     Mon compte
                   </Button>
@@ -165,12 +166,12 @@ export default function PricingPage() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5 text-sm">
+                  <Button variant="ghost" className="text-white/55 hover:text-white hover:bg-white/5 text-sm rounded-xl">
                     Connexion
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-4 rounded-xl">
+                  <Button className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-purple-600/30">
                     Essayer gratuitement
                   </Button>
                 </Link>
@@ -195,56 +196,66 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <section className="px-4 sm:px-6 pt-32 sm:pt-36 pb-16 sm:pb-24 relative">
+      <section className="px-4 sm:px-6 pt-32 sm:pt-40 pb-16 sm:pb-28 relative">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12 sm:mb-16"
+            className="text-center mb-14 sm:mb-18"
           >
-            <Badge className="mb-4 bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs px-3 py-1">
-              Tarifs
-            </Badge>
+            <AnimatedBadge delay={0.1}>
+              <Badge className="mb-5 bg-purple-500/10 text-purple-300 border-purple-500/20 text-xs px-3 py-1 rounded-full">
+                Tarifs
+              </Badge>
+            </AnimatedBadge>
             <h1 className="text-3xl sm:text-5xl font-heading font-semibold text-white mb-4 tracking-tight">
-              Simple et transparent
+              <TextReveal text="Simple et transparent" delay={0.15} />
             </h1>
-            <p className="text-white/40 text-base sm:text-lg max-w-md mx-auto">
-              Commencez gratuitement. Passez au niveau supérieur quand vous êtes prêt.
-            </p>
+            <FadeIn delay={0.4} blur>
+              <p className="text-white/42 text-base sm:text-lg max-w-md mx-auto">
+                Commencez gratuitement. Passez au niveau supérieur quand vous êtes prêt.
+              </p>
+            </FadeIn>
           </motion.div>
 
           {/* Plans */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start" staggerDelay={0.1}>
             {plans.map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={`relative flex flex-col p-5 sm:p-6 rounded-2xl border card-hover ${
-                  plan.highlight
-                    ? 'bg-purple-600/10 border-purple-500/40'
-                    : 'bg-white/[0.03] border-white/[0.06]'
-                }`}
-              >
+              <StaggerItem key={plan.name}>
+                <motion.div
+                  className={`relative flex flex-col rounded-2xl border transition-all duration-300 ${
+                    plan.highlight
+                      ? 'pricing-highlight p-5 sm:p-7 lg:-mt-3 lg:mb-3'
+                      : 'bg-white/[0.03] border-white/[0.065] p-5 sm:p-6'
+                  }`}
+                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                >
+                {/* Ligne lumineuse haut pour le plan highlight */}
                 {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">
-                      ⚡ Le plus populaire
-                    </span>
+                  <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+                )}
+
+                {plan.highlight && (
+                  <div className="flex items-center gap-1.5 text-xs text-purple-300 font-medium mb-4">
+                    <Zap className="h-3 w-3 fill-purple-400 text-purple-400" />
+                    Le plus populaire
                   </div>
                 )}
 
                 {/* Plan header */}
                 <div className="mb-6">
-                  <div className="text-white/50 text-sm mb-2">{plan.name}</div>
-                  <div className="flex items-baseline gap-1 mb-1">
+                  <div className={`text-sm mb-2 font-medium ${plan.highlight ? 'text-white/80' : 'text-white/45'}`}>
+                    {plan.name}
+                  </div>
+                  <div className="flex items-baseline gap-1.5 mb-1">
                     <span className="text-4xl font-heading font-semibold text-white">
                       {plan.price === 0 ? 'Gratuit' : `${plan.price}€`}
                     </span>
-                    {plan.price > 0 && <span className="text-white/30 text-sm">paiement unique</span>}
+                    {plan.price > 0 && (
+                      <span className="text-white/28 text-xs">paiement unique</span>
+                    )}
                   </div>
                   <p className="text-white/30 text-xs">{plan.desc}</p>
                 </div>
@@ -252,9 +263,9 @@ export default function PricingPage() {
                 {/* Features */}
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map(f => (
-                    <li key={f} className="flex items-start gap-2">
-                      <CheckCircle className={`h-4 w-4 shrink-0 mt-0.5 ${plan.highlight ? 'text-purple-400' : 'text-white/25'}`} />
-                      <span className="text-white/60 text-sm">{f}</span>
+                    <li key={f} className="flex items-start gap-2.5">
+                      <CheckCircle className={`h-4 w-4 shrink-0 mt-0.5 ${plan.highlight ? 'text-purple-400' : 'text-white/22'}`} />
+                      <span className={`text-sm ${plan.highlight ? 'text-white/65' : 'text-white/52'}`}>{f}</span>
                     </li>
                   ))}
                 </ul>
@@ -262,7 +273,7 @@ export default function PricingPage() {
                 {/* CTA */}
                 {plan.href ? (
                   <Link href={plan.href}>
-                    <Button className="w-full rounded-xl bg-white/5 hover:bg-white/10 text-white/70 border border-white/[0.06]">
+                    <Button className="w-full rounded-xl bg-white/[0.06] hover:bg-white/[0.10] text-white/60 hover:text-white/85 border border-white/[0.08] transition-all duration-200">
                       {plan.cta}
                     </Button>
                   </Link>
@@ -271,10 +282,10 @@ export default function PricingPage() {
                     <Button
                       onClick={() => plan.priceId && handleCheckout(plan.priceId, plan.planKey)}
                       disabled={loadingPlan === plan.planKey}
-                      className={`w-full rounded-xl gap-2 ${
+                      className={`w-full rounded-xl gap-2 font-medium transition-all duration-200 ${
                         plan.highlight
-                          ? 'bg-purple-600 hover:bg-purple-500 text-white hover:shadow-lg hover:shadow-purple-600/20'
-                          : 'bg-white/5 hover:bg-white/10 text-white/70 border border-white/[0.06]'
+                          ? 'bg-purple-600 hover:bg-purple-500 text-white hover:shadow-lg hover:shadow-purple-600/25'
+                          : 'bg-white/[0.06] hover:bg-white/[0.10] text-white/60 hover:text-white/85 border border-white/[0.08]'
                       }`}
                     >
                       {loadingPlan === plan.planKey ? (
@@ -285,7 +296,7 @@ export default function PricingPage() {
                       ) : (
                         <>
                           {plan.cta}
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          {plan.highlight && <ArrowRight className="h-3.5 w-3.5" />}
                         </>
                       )}
                     </Button>
@@ -293,22 +304,19 @@ export default function PricingPage() {
                 )}
               </motion.div>
             ))}
-          </div>
+          </StaggerContainer>
 
           {/* Reassurance */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 sm:mt-12 text-white/25 text-sm"
-          >
+          <FadeIn delay={0.5} blur>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-8 mt-12 sm:mt-14 text-white/28 text-sm">
             {['Sans abonnement', 'Paiement sécurisé par Stripe', 'Support par email'].map(t => (
               <div key={t} className="flex items-center gap-2">
-                <CheckCircle className="h-3.5 w-3.5 text-white/20" />
+                <CheckCircle className="h-3.5 w-3.5 text-white/18" />
                 {t}
               </div>
             ))}
-          </motion.div>
+          </div>
+          </FadeIn>
         </div>
       </section>
     </div>
