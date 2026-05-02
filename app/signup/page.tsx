@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Zap, Eye, EyeOff, Check, X } from 'lucide-react'
+import { Tag, Eye, EyeOff, Check, X } from 'lucide-react'
 
 function getPasswordStrength(password: string): { score: number; checks: Record<string, boolean> } {
   const checks = {
@@ -103,11 +103,12 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-[#080810] text-white flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Orbes */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-purple-600/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] rounded-full bg-indigo-500/8 blur-[100px]" />
+        <div className="absolute top-[-15%] left-[-5%] w-[500px] h-[500px] rounded-full bg-purple-600/8 blur-[140px]" />
+        <div className="absolute bottom-[-10%] right-[-8%] w-[400px] h-[400px] rounded-full bg-indigo-500/6 blur-[120px]" />
+        <div className="absolute top-[40%] right-[20%] w-[250px] h-[250px] rounded-full bg-violet-500/4 blur-[80px]" />
       </div>
 
       <motion.div
@@ -118,19 +119,21 @@ export default function SignupPage() {
       >
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center">
-              <Zap className="h-5 w-5 text-white" />
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:shadow-purple-600/50 transition-shadow">
+              <Tag className="h-4.5 w-4.5 text-white" />
             </div>
-            <span className="text-xl font-semibold tracking-tight text-white">ShopScribe</span>
+            <span className="text-xl font-semibold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">ShopScribe</span>
           </Link>
         </div>
 
         {/* Card */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
+        <div className="relative p-6 sm:p-8 rounded-2xl bg-white/[0.04] border border-white/[0.07] backdrop-blur-sm overflow-hidden">
+          {/* top-line lumineuse */}
+          <div className="absolute top-0 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-purple-400/40 to-transparent" />
           <div className="mb-6 text-center">
             <h1 className="text-xl font-semibold text-white mb-1">Créer un compte</h1>
-            <p className="text-white/40 text-sm">10 fiches produits gratuites par mois</p>
+            <p className="text-white/40 text-sm">3 générations gratuites pour commencer</p>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-4">
@@ -309,7 +312,7 @@ export default function SignupPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-11 font-medium transition-all hover:shadow-lg hover:shadow-purple-600/20 disabled:opacity-50 mt-1"
+              className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl h-11 font-medium transition-all shadow-lg shadow-purple-600/20 hover:shadow-purple-600/35 disabled:opacity-50 mt-1"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
