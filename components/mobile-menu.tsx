@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Menu, X, Tag, ArrowRight, LayoutDashboard, User,
   BadgeDollarSign, Layers, LogIn
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 interface MobileMenuProps {
   isLoggedIn?: boolean
@@ -17,6 +17,21 @@ const EASE = [0.21, 0.47, 0.32, 0.98] as const
 
 export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Empêche le scroll body quand menu ouvert
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   const links = [
     { href: '/pricing', label: 'Tarifs', icon: BadgeDollarSign },
@@ -26,6 +41,132 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
       : [{ href: '/login', label: 'Connexion', icon: LogIn }]
     ),
   ]
+
+  const portal = mounted ? (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9998,
+              background: 'rgba(0,0,0,0.75)',
+            }}
+            onClick={() => setOpen(false)}
+          />
+
+          {/* Drawer — rendu via portal, totalement isolé */}
+          <motion.div
+            key="drawer"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 280, mass: 0.8 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 9999,
+              width: 300,
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: '#09090f',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.8)',
+            }}
+          >
+            {/* Orb déco interne */}
+            <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '10%', left: '-10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.08), transparent 70%)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+
+            {/* Bordure gauche lumineuse */}
+            <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 1, background: 'linear-gradient(to bottom, transparent, rgba(168,85,247,0.3), transparent)' }} />
+
+            {/* Header */}
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 12, background: 'linear-gradient(135deg, #a855f7, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(147,51,234,0.3)' }}>
+                  <Tag style={{ width: 16, height: 16, color: 'white' }} />
+                </div>
+                <span style={{ color: 'white', fontWeight: 600, letterSpacing: '-0.02em' }}>ShopScribe</span>
+              </div>
+              <motion.button
+                onClick={() => setOpen(false)}
+                style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}
+                aria-label="Fermer"
+                whileTap={{ scale: 0.9, rotate: 90 }}
+                transition={{ duration: 0.15 }}
+              >
+                <X style={{ width: 16, height: 16 }} />
+              </motion.button>
+            </div>
+
+            {/* Links */}
+            <nav style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 4, padding: '20px 12px', flex: 1 }}>
+              {links.map(({ href, label, icon: Icon }, i) => (
+                <motion.div
+                  key={href}
+                  initial={{ opacity: 0, x: 24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05 + i * 0.07, duration: 0.35, ease: EASE }}
+                >
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'all 0.2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.color = 'white' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)' }}
+                  >
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />
+                    </div>
+                    {label}
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+
+            {/* Séparateur */}
+            <div style={{ margin: '0 20px', height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent)' }} />
+
+            {/* CTA */}
+            <motion.div
+              style={{ padding: '20px 16px 40px' }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28, duration: 0.4, ease: EASE }}
+            >
+              {isLoggedIn ? (
+                <Link href="/account" onClick={() => setOpen(false)} style={{ display: 'block', textDecoration: 'none' }}>
+                  <button style={{ width: '100%', height: 48, borderRadius: 12, background: 'linear-gradient(135deg, #9333ea, #7c3aed)', color: 'white', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 20px rgba(147,51,234,0.25)' }}>
+                    <User style={{ width: 16, height: 16 }} />
+                    Mon compte
+                  </button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/signup" onClick={() => setOpen(false)} style={{ display: 'block', textDecoration: 'none' }}>
+                    <button style={{ width: '100%', height: 48, borderRadius: 12, background: 'linear-gradient(135deg, #9333ea, #7c3aed)', color: 'white', fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 20px rgba(147,51,234,0.25)' }}>
+                      Essayer gratuitement
+                      <ArrowRight style={{ width: 16, height: 16 }} />
+                    </button>
+                  </Link>
+                  <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.22)', fontSize: 12, marginTop: 12 }}>3 générations gratuites · Sans CB</p>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  ) : null
 
   return (
     <>
@@ -39,112 +180,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
         <Menu className="h-5 w-5" />
       </motion.button>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md"
-              onClick={() => setOpen(false)}
-            />
-
-            {/* Drawer */}
-            <motion.div
-              key="drawer"
-              initial={{ x: '100%', opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 280, mass: 0.8 }}
-              className="fixed top-0 right-0 bottom-0 z-[70] w-[300px] flex flex-col shadow-2xl shadow-black/80"
-              style={{ backgroundColor: '#09090f', backgroundImage: 'none', isolation: 'isolate' }}
-            >
-              {/* Orb déco interne */}
-              <div className="absolute top-[-10%] right-[-10%] w-[220px] h-[220px] rounded-full bg-purple-600/12 blur-[80px] pointer-events-none" />
-              <div className="absolute bottom-[10%] left-[-10%] w-[160px] h-[160px] rounded-full bg-indigo-500/8 blur-[60px] pointer-events-none" />
-
-              {/* Bordure gauche lumineuse */}
-              <div className="absolute top-0 left-0 bottom-0 w-px bg-gradient-to-b from-transparent via-purple-500/30 to-transparent" />
-
-              {/* Header */}
-              <div className="relative flex items-center justify-between px-5 py-5 border-b border-white/[0.07]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-600/30">
-                    <Tag className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-white font-semibold tracking-tight">ShopScribe</span>
-                </div>
-                <motion.button
-                  onClick={() => setOpen(false)}
-                  className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-white/45 hover:text-white hover:bg-white/10 transition-all"
-                  aria-label="Fermer"
-                  whileTap={{ scale: 0.9, rotate: 90 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <X className="h-4 w-4" />
-                </motion.button>
-              </div>
-
-              {/* Links avec stagger */}
-              <nav className="relative flex flex-col gap-1 px-3 py-5 flex-1">
-                {links.map(({ href, label, icon: Icon }, i) => (
-                  <motion.div
-                    key={href}
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + i * 0.07, duration: 0.35, ease: EASE }}
-                  >
-                    <Link
-                      href={href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-white/55 hover:text-white hover:bg-white/[0.07] transition-all text-sm font-medium group"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.07] flex items-center justify-center group-hover:bg-purple-600/15 group-hover:border-purple-500/25 transition-all">
-                        <Icon className="h-3.5 w-3.5 text-white/40 group-hover:text-purple-400 transition-colors" />
-                      </div>
-                      {label}
-                    </Link>
-                  </motion.div>
-                ))}
-              </nav>
-
-              {/* Séparateur dégradé */}
-              <div className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-
-              {/* CTA */}
-              <motion.div
-                className="relative px-4 pb-10 pt-5"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.28, duration: 0.4, ease: EASE }}
-              >
-                {isLoggedIn ? (
-                  <Link href="/account" onClick={() => setOpen(false)}>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-12 gap-2 text-sm font-medium hover:shadow-lg hover:shadow-purple-600/25 transition-all">
-                      <User className="h-4 w-4" />
-                      Mon compte
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/signup" onClick={() => setOpen(false)}>
-                      <Button className="w-full bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-12 gap-2 text-sm font-medium hover:shadow-lg hover:shadow-purple-600/25 transition-all">
-                        Essayer gratuitement
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <p className="text-center text-white/22 text-xs mt-3">3 générations gratuites · Sans CB</p>
-                  </>
-                )}
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {mounted && createPortal(portal, document.body)}
     </>
   )
 }
