@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-  Zap, LogOut, Crown, User, Mail, Shield, ArrowRight,
+  LogOut, Crown, User, Mail, Shield, ArrowRight,
   Check, Eye, EyeOff, X, Tag, Trash2, AlertTriangle
 } from 'lucide-react'
 

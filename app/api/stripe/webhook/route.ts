@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
             plan,
             generations_used: 0,
             generations_limit: generations,
+            generations_reset_at: new Date().toISOString(),
             last_stripe_session_id: sessionId,
           })
           .eq('id', uid)

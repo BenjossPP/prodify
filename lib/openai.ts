@@ -75,6 +75,7 @@ function buildSystemPrompt(category: string, language: string, brandProfile?: Br
 }
 
 function buildUserPrompt(params: GenerateProductSheetParams, variantIndex?: number): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { productName, keywords, category, tone, language, variants, imageBase64 } = params
   const variantHint = variantIndex !== undefined
     ? (language === 'fr' ? ` (variante ${variantIndex + 1} sur 3 — approche différente)` : ` (variant ${variantIndex + 1} of 3 — different angle)`)

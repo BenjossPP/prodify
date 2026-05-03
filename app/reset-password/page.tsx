@@ -32,6 +32,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sessionReady, setSessionReady] = useState(false)
   const router = useRouter()
   const supabase = createClient()

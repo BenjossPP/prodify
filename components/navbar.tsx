@@ -5,8 +5,6 @@ import Link from 'next/link'
 import { Tag, ArrowRight, LayoutDashboard, User, Menu, X, BadgeDollarSign, Layers, LogIn } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-const EASE = [0.21, 0.47, 0.32, 0.98] as const
-
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [sessionLoading, setSessionLoading] = useState(true)
@@ -15,7 +13,11 @@ export function Navbar() {
   const [ready, setReady] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => { setReady(true) }, [])
+  // Mark ready after mount to avoid SSR mismatch
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -27,6 +29,7 @@ export function Navbar() {
       setSessionLoading(false)
     })
     return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -36,7 +39,6 @@ export function Navbar() {
   }, [])
 
   // Lock scroll iOS Safari
-  const scrollY = useEffect(() => {}, []) // placeholder
   useEffect(() => {
     if (!menuOpen) return
     const y = window.scrollY

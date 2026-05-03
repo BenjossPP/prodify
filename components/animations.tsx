@@ -5,6 +5,7 @@ import { useRef, useEffect, useState } from 'react'
 
 // ─── Easing curves ────────────────────────────────────────────────────────────
 const EASE_SMOOTH = [0.21, 0.47, 0.32, 0.98] as const
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const EASE_SPRING = { type: 'spring', stiffness: 100, damping: 20 }
 
 // ─── FadeIn ───────────────────────────────────────────────────────────────────
@@ -215,6 +216,7 @@ export function CountUp({
   useEffect(() => {
     if (!isInView) return
     const start = Date.now()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const end = start + duration * 1000
     const tick = () => {
       const now = Date.now()

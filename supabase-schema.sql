@@ -119,6 +119,8 @@ create table if not exists public.bulk_jobs (
 
 alter table public.bulk_jobs enable row level security;
 
+-- Add is_favorite column to generations (idempotent)
+alter table public.generations add column if not exists is_favorite boolean not null default false;
 create policy "Users can manage own bulk jobs"
   on public.bulk_jobs for all
   using (auth.uid() = user_id)

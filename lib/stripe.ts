@@ -17,20 +17,20 @@ export const PLANS = {
     nameEn: 'Starter',
     price: 9,
     generations: 25,
-    stripePriceId: process.env.STRIPE_STARTER_PRICE_ID || null,
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || null,
   },
   pro: {
     name: 'Pro',
     nameEn: 'Pro',
     price: 29,
     generations: 100,
-    stripePriceId: process.env.STRIPE_PRO_PRICE_ID || null,
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || null,
   },
   business: {
     name: 'Business',
     nameEn: 'Business',
     price: 59,
     generations: 500,
-    stripePriceId: process.env.STRIPE_BUSINESS_PRICE_ID || null,
+    stripePriceId: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID || null,
   },
 }

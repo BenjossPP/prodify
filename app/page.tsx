@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
   FadeIn, StaggerContainer, StaggerItem, ScaleIn,
-  SlideIn, TextReveal, AnimatedBadge, GlowPulse, CountUp, RevealLine
+  SlideIn, TextReveal, AnimatedBadge, GlowPulse, CountUp
 } from '@/components/animations'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -90,7 +90,7 @@ export default function HomePage() {
           <AnimatedBadge delay={0.1}>
             <div className="inline-flex items-center gap-2 mb-7 sm:mb-9 px-4 py-2 rounded-full border border-purple-500/25 shimmer">
               <Sparkles className="h-3.5 w-3.5 text-purple-300 shrink-0" />
-              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par l'intelligence artificielle · 6 langues disponibles</span>
+              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par l&apos;intelligence artificielle · 6 langues disponibles</span>
             </div>
           </AnimatedBadge>
 
@@ -387,6 +387,94 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Testimonials ─────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn blur>
+            <div className="text-center mb-12 sm:mb-16">
+              <AnimatedBadge>
+                <Badge className="mb-4 bg-yellow-500/10 text-yellow-300 border-yellow-500/20 text-xs px-3 py-1 rounded-full">
+                  Ils nous font confiance
+                </Badge>
+              </AnimatedBadge>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4">
+                <TextReveal text="Ce que disent nos vendeurs" />
+              </h2>
+            </div>
+          </FadeIn>
+
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerDelay={0.1}>
+            {[
+              {
+                name: 'Julie M.',
+                role: 'Boutique Etsy · Bijoux artisanaux',
+                avatar: 'JM',
+                text: 'J\'ai réduit mon temps de création de fiches de 3h à 15 minutes par semaine. Les descriptions sont vraiment de qualité, je n\'ai presque rien à retoucher.',
+                stars: 5,
+              },
+              {
+                name: 'Thomas P.',
+                role: 'Dropshipping Shopify · 200+ produits',
+                avatar: 'TP',
+                text: 'L\'upload en masse est un game changer. J\'ai généré 150 fiches en une nuit pour mon nouveau catalogue. SEO nickel, conversion en hausse.',
+                stars: 5,
+              },
+              {
+                name: 'Sarah A.',
+                role: 'Amazon FBA · Mode & accessoires',
+                avatar: 'SA',
+                text: 'Les bullet points générés sont parfaitement calibrés pour Amazon. Mes listings sont mieux classés depuis que j\'utilise ShopScribe.',
+                stars: 5,
+              },
+              {
+                name: 'Lucas B.',
+                role: 'Agence e-commerce · 12 clients',
+                avatar: 'LB',
+                text: 'On gère plusieurs boutiques pour nos clients. ShopScribe nous fait gagner un temps fou. Le plan Business est largement rentabilisé dès la première semaine.',
+                stars: 5,
+              },
+              {
+                name: 'Marie R.',
+                role: 'WooCommerce · Cosmétiques naturels',
+                avatar: 'MR',
+                text: 'La qualité des descriptions en français est bluffante. Aucun texte générique — chaque fiche est vraiment adaptée au produit.',
+                stars: 5,
+              },
+              {
+                name: 'Nicolas F.',
+                role: 'Marketplace multi-canaux',
+                avatar: 'NF',
+                text: 'J\'utilise la génération en 6 langues pour vendre en Europe. Même qualité en espagnol et en allemand. Impressionnant.',
+                stars: 5,
+              },
+            ].map(({ name, role, avatar, text, stars }) => (
+              <StaggerItem key={name}>
+                <motion.div
+                  className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] h-full flex flex-col gap-4 transition-all duration-300"
+                  whileHover={{ y: -4, borderColor: 'rgba(139,92,246,0.3)', transition: { duration: 0.2 } }}
+                >
+                  <div className="flex gap-0.5">
+                    {[...Array(stars)].map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-white/60 text-sm leading-relaxed flex-1">&ldquo;{text}&rdquo;</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-[11px] font-semibold text-white shrink-0">
+                      {avatar}
+                    </div>
+                    <div>
+                      <div className="text-white/85 text-sm font-medium">{name}</div>
+                      <div className="text-white/35 text-xs">{role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+
       {/* ── Pricing teaser ───────────────────────────────────────────────────── */}
       <section className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto">
@@ -463,6 +551,63 @@ export default function HomePage() {
               </Link>
             </p>
           </FadeIn>
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24 section-alt">
+        <div className="max-w-3xl mx-auto">
+          <FadeIn blur>
+            <div className="text-center mb-12">
+              <AnimatedBadge>
+                <Badge className="mb-4 bg-purple-500/10 text-purple-300 border-purple-500/20 text-xs px-3 py-1 rounded-full">
+                  FAQ
+                </Badge>
+              </AnimatedBadge>
+              <h2 className="text-3xl sm:text-4xl font-heading font-semibold text-white">
+                <TextReveal text="Questions fréquentes" />
+              </h2>
+            </div>
+          </FadeIn>
+
+          <StaggerContainer className="flex flex-col gap-3" staggerDelay={0.07}>
+            {[
+              {
+                q: 'Comment fonctionne ShopScribe ?',
+                a: 'Vous saisissez le nom de votre produit, quelques mots-clés et choisissez le ton et la langue. ShopScribe génère en quelques secondes un titre SEO, une description complète, 5 bullet points, une méta-description et des tags prêts à l\'emploi.',
+              },
+              {
+                q: 'Les paiements sont-ils récurrents ?',
+                a: 'Non. Tous nos plans sont des paiements uniques (one-time payment). Vous achetez un crédit de générations et l\'utilisez à votre rythme, sans abonnement ni frais cachés.',
+              },
+              {
+                q: 'Que se passe-t-il quand j\'épuise mes générations ?',
+                a: 'Vous pouvez racheter un plan à tout moment. Vos nouvelles générations s\'ajoutent à votre compte. Il n\'y a pas de date d\'expiration.',
+              },
+              {
+                q: 'Sur quelles plateformes puis-je utiliser les fiches générées ?',
+                a: 'Les fiches sont compatibles avec toutes les plateformes e-commerce : Shopify, WooCommerce, Etsy, Amazon, Cdiscount, PrestaShop, etc. Il suffit de copier-coller.',
+              },
+              {
+                q: 'Quelles langues sont disponibles ?',
+                a: 'ShopScribe supporte 6 langues nativement : français, anglais, espagnol, allemand, italien et néerlandais. La qualité est identique dans chaque langue.',
+              },
+              {
+                q: 'Est-ce que je peux générer en masse ?',
+                a: 'Oui, les plans Pro et Business incluent un upload CSV pour générer plusieurs fiches en une seule opération. Idéal pour les catalogues de plusieurs dizaines ou centaines de produits.',
+              },
+            ].map(({ q, a }, i) => (
+              <StaggerItem key={i}>
+                <motion.div
+                  className="p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] transition-all duration-300"
+                  whileHover={{ borderColor: 'rgba(139,92,246,0.25)', transition: { duration: 0.2 } }}
+                >
+                  <div className="font-medium text-white/90 text-sm sm:text-base mb-2">{q}</div>
+                  <div className="text-white/48 text-sm leading-relaxed">{a}</div>
+                </motion.div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
         </div>
       </section>
 

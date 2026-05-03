@@ -95,7 +95,7 @@ async function processJob(
         keywords: row.keywords,
         category: row.category || 'Général',
         tone: row.tone || 'professionnel',
-        language: (row.language as 'fr' | 'en') || 'fr',
+        language: (row.language as 'fr' | 'en' | 'es' | 'de' | 'it' | 'nl') || 'fr',
         brandProfile: brandProfile as never,
       })
 

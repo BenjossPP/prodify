@@ -18,7 +18,10 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
   const [ready, setReady] = useState(false)
 
-  useEffect(() => { setReady(true) }, [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true)
+  }, [])
   const scrollY = useRef(0)
 
   useEffect(() => {
