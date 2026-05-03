@@ -61,8 +61,8 @@ const features = [
   },
   {
     icon: Globe,
-    title: 'Français & Anglais',
-    desc: 'Générez vos fiches dans les deux langues pour toucher un marché international.',
+    title: '6 langues disponibles',
+    desc: 'Générez vos fiches en 6 langues pour toucher un marché international.',
   },
 ]
 
@@ -90,7 +90,7 @@ export default function HomePage() {
           <AnimatedBadge delay={0.1}>
             <div className="inline-flex items-center gap-2 mb-7 sm:mb-9 px-4 py-2 rounded-full border border-purple-500/25 shimmer">
               <Sparkles className="h-3.5 w-3.5 text-purple-300 shrink-0" />
-              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par GPT-4o · Bilingue FR / EN</span>
+              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par l'intelligence artificielle · 6 langues disponibles</span>
             </div>
           </AnimatedBadge>
 
@@ -226,7 +226,7 @@ export default function HomePage() {
             {[
               { icon: Clock, value: 10, suffix: ' sec', label: 'par fiche produit', color: 'text-purple-400', prefix: '' },
               { icon: TrendingUp, value: 40, suffix: '%', label: 'de taux de conversion', color: 'text-indigo-400', prefix: '+' },
-              { icon: Globe, value: 2, suffix: ' langues', label: 'FR & EN nativement', color: 'text-pink-400', prefix: '' },
+              { icon: Globe, value: 6, suffix: ' langues', label: '6 langues nativement', color: 'text-pink-400', prefix: '' },
             ].map(({ icon: Icon, value, suffix, prefix, label, color }) => (
               <StaggerItem key={label}>
                 <motion.div
