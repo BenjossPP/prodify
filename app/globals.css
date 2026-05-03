@@ -232,6 +232,10 @@
 ::-webkit-scrollbar-thumb { background: oklch(0.22 0.02 265); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: oklch(0.63 0.24 290 / 0.6); }
 
+/* Masquer la scrollbar du carrousel témoignages sans perdre la fonctionnalité */
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
 /* ─── Selection ─────────────────────────────────────────────────────────────── */
 ::selection {
   background: oklch(0.63 0.24 290 / 0.35);

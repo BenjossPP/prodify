@@ -1839,9 +1839,9 @@ export default function DashboardClient({
                             </>
                           ) : (
                             <>
-                              <Sparkles className="h-4 w-4" />
+                              <Sparkles className="h-4 w-4 shrink-0" />
                               {withVariants ? 'Générer 3 variantes' : 'Générer la fiche produit'}
-                              <ArrowRight className="h-4 w-4 ml-auto" />
+                              <ArrowRight className="h-4 w-4 shrink-0" />
                             </>
                           )}
                         </motion.button>

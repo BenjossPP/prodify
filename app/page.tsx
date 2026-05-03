@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   FadeIn, StaggerContainer, StaggerItem, ScaleIn,
   SlideIn, TextReveal, AnimatedBadge, GlowPulse, CountUp
@@ -10,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   ArrowRight, CheckCircle, Star, Clock, TrendingUp,
-  Sparkles, Shield, Globe, ChevronDown, Tag, Zap
+  Sparkles, Shield, Globe, ChevronDown, Tag, Zap, Plus, Minus
 } from 'lucide-react'
 import { Navbar } from '@/components/navbar'
 
@@ -67,6 +68,75 @@ const features = [
 ]
 
 const avatars = ['JM', 'SA', 'LB', 'TP', 'MR']
+
+const faqItems = [
+  {
+    q: 'Comment fonctionne ShopScribe ?',
+    a: 'Vous saisissez le nom de votre produit, quelques mots-clés et choisissez le ton et la langue. ShopScribe génère en quelques secondes un titre SEO, une description complète, 5 bullet points, une méta-description et des tags prêts à l\'emploi.',
+  },
+  {
+    q: 'Les paiements sont-ils récurrents ?',
+    a: 'Non. Tous nos plans sont des paiements uniques (one-time payment). Vous achetez un crédit de générations et l\'utilisez à votre rythme, sans abonnement ni frais cachés.',
+  },
+  {
+    q: 'Que se passe-t-il quand j\'épuise mes générations ?',
+    a: 'Vous pouvez racheter un plan à tout moment. Vos nouvelles générations s\'ajoutent à votre compte. Il n\'y a pas de date d\'expiration.',
+  },
+  {
+    q: 'Sur quelles plateformes puis-je utiliser les fiches générées ?',
+    a: 'Les fiches sont compatibles avec toutes les plateformes e-commerce : Shopify, WooCommerce, Etsy, Amazon, Cdiscount, PrestaShop, etc. Il suffit de copier-coller.',
+  },
+  {
+    q: 'Quelles langues sont disponibles ?',
+    a: 'ShopScribe supporte 6 langues nativement : français, anglais, espagnol, allemand, italien et néerlandais. La qualité est identique dans chaque langue.',
+  },
+  {
+    q: 'Est-ce que je peux générer en masse ?',
+    a: 'Oui, les plans Pro et Business incluent un upload CSV pour générer plusieurs fiches en une seule opération. Idéal pour les catalogues de plusieurs dizaines ou centaines de produits.',
+  },
+]
+
+function FaqAccordion() {
+  const [open, setOpen] = useState<number | null>(null)
+
+  return (
+    <div className="flex flex-col gap-2 sm:gap-3">
+      {faqItems.map(({ q, a }, i) => (
+        <motion.div
+          key={i}
+          className="rounded-2xl bg-white/[0.03] border border-white/[0.065] overflow-hidden transition-colors duration-200"
+          animate={{ borderColor: open === i ? 'rgba(139,92,246,0.25)' : 'rgba(255,255,255,0.065)' }}
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(open === i ? null : i)}
+            className="w-full flex items-center justify-between gap-4 px-5 py-4 sm:px-6 sm:py-5 text-left"
+          >
+            <span className="font-medium text-white/90 text-sm sm:text-base">{q}</span>
+            <span className="shrink-0 text-white/35">
+              {open === i ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            </span>
+          </button>
+          <AnimatePresence initial={false}>
+            {open === i && (
+              <motion.div
+                key="content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <div className="px-5 pb-4 sm:px-6 sm:pb-5 text-white/48 text-sm leading-relaxed">
+                  {a}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
 
 export default function HomePage() {
   return (
@@ -391,7 +461,7 @@ export default function HomePage() {
       <section className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-6xl mx-auto">
           <FadeIn blur>
-            <div className="text-center mb-12 sm:mb-16">
+            <div className="text-center mb-10 sm:mb-16">
               <AnimatedBadge>
                 <Badge className="mb-4 bg-yellow-500/10 text-yellow-300 border-yellow-500/20 text-xs px-3 py-1 rounded-full">
                   Ils nous font confiance
@@ -403,59 +473,61 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerDelay={0.1}>
-            {[
-              {
-                name: 'Julie M.',
-                role: 'Boutique Etsy · Bijoux artisanaux',
-                avatar: 'JM',
-                text: 'J\'ai réduit mon temps de création de fiches de 3h à 15 minutes par semaine. Les descriptions sont vraiment de qualité, je n\'ai presque rien à retoucher.',
-                stars: 5,
-              },
-              {
-                name: 'Thomas P.',
-                role: 'Dropshipping Shopify · 200+ produits',
-                avatar: 'TP',
-                text: 'L\'upload en masse est un game changer. J\'ai généré 150 fiches en une nuit pour mon nouveau catalogue. SEO nickel, conversion en hausse.',
-                stars: 5,
-              },
-              {
-                name: 'Sarah A.',
-                role: 'Amazon FBA · Mode & accessoires',
-                avatar: 'SA',
-                text: 'Les bullet points générés sont parfaitement calibrés pour Amazon. Mes listings sont mieux classés depuis que j\'utilise ShopScribe.',
-                stars: 5,
-              },
-              {
-                name: 'Lucas B.',
-                role: 'Agence e-commerce · 12 clients',
-                avatar: 'LB',
-                text: 'On gère plusieurs boutiques pour nos clients. ShopScribe nous fait gagner un temps fou. Le plan Business est largement rentabilisé dès la première semaine.',
-                stars: 5,
-              },
-              {
-                name: 'Marie R.',
-                role: 'WooCommerce · Cosmétiques naturels',
-                avatar: 'MR',
-                text: 'La qualité des descriptions en français est bluffante. Aucun texte générique — chaque fiche est vraiment adaptée au produit.',
-                stars: 5,
-              },
-              {
-                name: 'Nicolas F.',
-                role: 'Marketplace multi-canaux',
-                avatar: 'NF',
-                text: 'J\'utilise la génération en 6 langues pour vendre en Europe. Même qualité en espagnol et en allemand. Impressionnant.',
-                stars: 5,
-              },
-            ].map(({ name, role, avatar, text, stars }) => (
-              <StaggerItem key={name}>
+          {/* Mobile : scroll horizontal snappable — Desktop : grille 3 colonnes */}
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory sm:snap-none pb-4 sm:pb-0 scrollbar-none">
+              {[
+                {
+                  name: 'Julie M.',
+                  role: 'Etsy · bijoux faits main',
+                  avatar: 'JM',
+                  text: 'Honnêtement j\'étais sceptique au début. Mais j\'ai testé sur 3 produits et c\'était vraiment bien. Maintenant j\'écris plus une seule fiche moi-même. Je retouche un mot par-ci par-là, c\'est tout.',
+                  stars: 5,
+                },
+                {
+                  name: 'Thomas P.',
+                  role: 'Shopify · accessoires tech',
+                  avatar: 'TP',
+                  text: 'J\'avais 140 refs à migrer sur un nouveau shop. Avec le CSV j\'ai tout passé en une soirée. Y\'a eu 2-3 fiches un peu génériques que j\'ai refaites, mais le reste était utilisable direct.',
+                  stars: 4,
+                },
+                {
+                  name: 'Sarah A.',
+                  role: 'Amazon FBA · prêt-à-porter',
+                  avatar: 'SA',
+                  text: 'Les bullet points pour Amazon sont vraiment bien structurés. Je pensais devoir tout reformater mais non. Mes rankings ont bougé positivement sur quelques produits, difficile d\'isoler la cause exacte mais bon.',
+                  stars: 5,
+                },
+                {
+                  name: 'Lucas B.',
+                  role: 'Agence web · e-commerce',
+                  avatar: 'LB',
+                  text: 'On l\'a intégré dans notre process client. Ça remplace pas le copywriter pour les gros comptes, mais pour les petites boutiques c\'est parfait. Le gain de temps est réel, on facture plus vite.',
+                  stars: 4,
+                },
+                {
+                  name: 'Marie R.',
+                  role: 'WooCommerce · cosmétiques bio',
+                  avatar: 'MR',
+                  text: 'Ce qui m\'a convaincue c\'est la cohérence du ton. J\'avais paramétré mon profil de marque et ça s\'est senti dans les textes. Quelques ajustements sur le vocabulaire mais globalement très bon.',
+                  stars: 5,
+                },
+                {
+                  name: 'Nicolas F.',
+                  role: 'Vente multi-canaux · Europe',
+                  avatar: 'NF',
+                  text: 'Je vends en FR, ES et DE. L\'espagnol est vraiment propre. L\'allemand... disons que c\'est correct, j\'ai un partenaire là-bas qui valide. Dans l\'ensemble ça m\'évite de payer 3 traducteurs.',
+                  stars: 5,
+                },
+              ].map(({ name, role, avatar, text, stars }) => (
                 <motion.div
-                  className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] h-full flex flex-col gap-4 transition-all duration-300"
+                  key={name}
+                  className="snap-start shrink-0 w-[78vw] xs:w-[72vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] flex flex-col gap-4 transition-all duration-300"
                   whileHover={{ y: -4, borderColor: 'rgba(139,92,246,0.3)', transition: { duration: 0.2 } }}
                 >
                   <div className="flex gap-0.5">
-                    {[...Array(stars)].map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                    {[1,2,3,4,5].map((i) => (
+                      <Star key={i} className={`h-3.5 w-3.5 ${i <= stars ? 'fill-yellow-400 text-yellow-400' : 'fill-white/10 text-white/10'}`} />
                     ))}
                   </div>
                   <p className="text-white/60 text-sm leading-relaxed flex-1">&ldquo;{text}&rdquo;</p>
@@ -469,9 +541,15 @@ export default function HomePage() {
                     </div>
                   </div>
                 </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+              ))}
+            </div>
+            {/* Indicateur de scroll — mobile only */}
+            <div className="flex justify-center gap-1.5 mt-4 sm:hidden">
+              {[0,1,2,3,4,5].map(i => (
+                <div key={i} className={`rounded-full bg-white/20 transition-all ${i === 0 ? 'w-4 h-1.5' : 'w-1.5 h-1.5'}`} />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -558,7 +636,7 @@ export default function HomePage() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 section-alt">
         <div className="max-w-3xl mx-auto">
           <FadeIn blur>
-            <div className="text-center mb-12">
+            <div className="text-center mb-10 sm:mb-12">
               <AnimatedBadge>
                 <Badge className="mb-4 bg-purple-500/10 text-purple-300 border-purple-500/20 text-xs px-3 py-1 rounded-full">
                   FAQ
@@ -570,44 +648,7 @@ export default function HomePage() {
             </div>
           </FadeIn>
 
-          <StaggerContainer className="flex flex-col gap-3" staggerDelay={0.07}>
-            {[
-              {
-                q: 'Comment fonctionne ShopScribe ?',
-                a: 'Vous saisissez le nom de votre produit, quelques mots-clés et choisissez le ton et la langue. ShopScribe génère en quelques secondes un titre SEO, une description complète, 5 bullet points, une méta-description et des tags prêts à l\'emploi.',
-              },
-              {
-                q: 'Les paiements sont-ils récurrents ?',
-                a: 'Non. Tous nos plans sont des paiements uniques (one-time payment). Vous achetez un crédit de générations et l\'utilisez à votre rythme, sans abonnement ni frais cachés.',
-              },
-              {
-                q: 'Que se passe-t-il quand j\'épuise mes générations ?',
-                a: 'Vous pouvez racheter un plan à tout moment. Vos nouvelles générations s\'ajoutent à votre compte. Il n\'y a pas de date d\'expiration.',
-              },
-              {
-                q: 'Sur quelles plateformes puis-je utiliser les fiches générées ?',
-                a: 'Les fiches sont compatibles avec toutes les plateformes e-commerce : Shopify, WooCommerce, Etsy, Amazon, Cdiscount, PrestaShop, etc. Il suffit de copier-coller.',
-              },
-              {
-                q: 'Quelles langues sont disponibles ?',
-                a: 'ShopScribe supporte 6 langues nativement : français, anglais, espagnol, allemand, italien et néerlandais. La qualité est identique dans chaque langue.',
-              },
-              {
-                q: 'Est-ce que je peux générer en masse ?',
-                a: 'Oui, les plans Pro et Business incluent un upload CSV pour générer plusieurs fiches en une seule opération. Idéal pour les catalogues de plusieurs dizaines ou centaines de produits.',
-              },
-            ].map(({ q, a }, i) => (
-              <StaggerItem key={i}>
-                <motion.div
-                  className="p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] transition-all duration-300"
-                  whileHover={{ borderColor: 'rgba(139,92,246,0.25)', transition: { duration: 0.2 } }}
-                >
-                  <div className="font-medium text-white/90 text-sm sm:text-base mb-2">{q}</div>
-                  <div className="text-white/48 text-sm leading-relaxed">{a}</div>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+          <FaqAccordion />
         </div>
       </section>
 
