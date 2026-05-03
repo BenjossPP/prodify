@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -15,13 +16,12 @@ const PLAN_COLORS: Record<string, string> = {
   business: 'from-amber-500 to-amber-700',
 }
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const plan = searchParams.get('plan') || 'pro'
   const [tick, setTick] = useState(0)
 
-  // Animated counter for quota
   useEffect(() => {
     const target = PLAN_QUOTAS[plan] || 100
     const step = Math.ceil(target / 40)
@@ -134,5 +134,13 @@ export default function SuccessPage() {
 
       </div>
     </div>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense>
+      <SuccessContent />
+    </Suspense>
   )
 }
