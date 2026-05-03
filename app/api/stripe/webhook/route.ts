@@ -33,10 +33,23 @@ export async function POST(request: NextRequest) {
       const session = event.data.object as any
       const uid = session.metadata?.supabase_uid
       const plan = session.metadata?.plan as keyof typeof PLANS
+      const sessionId = session.id as string
 
       console.log('checkout.session.completed — uid:', uid, 'plan:', plan)
 
       if (uid && plan && PLANS[plan]) {
+        // Idempotency check: skip if this session was already processed
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('last_stripe_session_id')
+          .eq('id', uid)
+          .single()
+
+        if (existing?.last_stripe_session_id === sessionId) {
+          console.log('Webhook already processed for session:', sessionId, '— skipping')
+          break
+        }
+
         const generations = PLANS[plan].generations
         const { error } = await supabase
           .from('profiles')
@@ -44,6 +57,7 @@ export async function POST(request: NextRequest) {
             plan,
             generations_used: 0,
             generations_limit: generations,
+            last_stripe_session_id: sessionId,
           })
           .eq('id', uid)
 

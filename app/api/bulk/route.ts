@@ -33,15 +33,20 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
+  // Atomic quota check + increment for the entire batch
   if (profile) {
-    const plan = profile.plan || 'free'
-    const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
-    const limit = limits[plan] ?? 3
-    const currentUsed = profile.generations_used
+    const { data: allowed, error: rpcError } = await supabase.rpc('check_and_increment_quota', {
+      p_user_id: user.id,
+      p_amount: rows.length,
+    })
 
-    if (limit !== -1 && currentUsed + rows.length > limit) {
+    if (rpcError || allowed === false) {
+      const plan = profile.plan || 'free'
+      const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
+      const limit = limits[plan] ?? 3
+      const remaining = Math.max(0, limit - profile.generations_used)
       return NextResponse.json(
-        { error: `Quota insuffisant. Vous avez ${Math.max(0, limit - currentUsed)} générations restantes.` },
+        { error: `Quota insuffisant. Vous avez ${remaining} générations restantes.` },
         { status: 429 }
       )
     }
@@ -62,7 +67,13 @@ export async function POST(request: NextRequest) {
   const brandProfile = profile?.brand_profile || undefined
 
   // Process asynchronously (fire and forget)
-  processJob(job.id, rows, brandProfile, user.id).catch(console.error)
+  processJob(job.id, rows, brandProfile, user.id).catch(async (err) => {
+    console.error('processJob fatal error:', err)
+    await getAdminClient()
+      .from('bulk_jobs')
+      .update({ status: 'error' })
+      .eq('id', job.id)
+  })
 
   return NextResponse.json({ jobId: job.id })
 }
@@ -100,8 +111,7 @@ async function processJob(
         language: row.language || 'fr',
         result: sheet,
       })
-
-      await admin.rpc('increment_generations', { user_id: userId })
+      // Note: quota was already atomically pre-decremented at job creation time
     } catch {
       results.push({ productName: row.productName, error: 'Échec de la génération' })
     }

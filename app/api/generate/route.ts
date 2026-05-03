@@ -5,7 +5,7 @@ import { generateProductSheet, generateProductSheetVariants } from '@/lib/openai
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { productName, keywords, category, tone, language, variants } = body
+    const { productName, keywords, category, tone, language, variants, imageBase64, imageMimeType } = body
 
     if (!productName || !keywords) {
       return NextResponse.json({ error: 'Nom du produit et mots-clés requis' }, { status: 400 })
@@ -25,13 +25,15 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (profile) {
-        const plan = profile.plan || 'free'
-        const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
-        const limit = limits[plan] ?? 3
-        // Each variant call counts as 3 generations
         const cost = variants ? 3 : 1
 
-        if (limit !== -1 && profile.generations_used + cost > limit) {
+        // Atomic quota check + increment to prevent race conditions
+        const { data: allowed, error: rpcError } = await supabase.rpc('check_and_increment_quota', {
+          p_user_id: user.id,
+          p_amount: cost,
+        })
+
+        if (rpcError || allowed === false) {
           return NextResponse.json(
             { error: 'Quota atteint. Achetez un nouveau pack pour continuer.' },
             { status: 429 }
@@ -61,6 +63,8 @@ export async function POST(request: NextRequest) {
       tone: tone || 'professionnel',
       language: language || 'fr',
       brandProfile,
+      imageBase64: imageBase64 || undefined,
+      imageMimeType: imageMimeType || undefined,
     }
 
     // Generate product sheet(s)
@@ -76,20 +80,31 @@ export async function POST(request: NextRequest) {
 
     // Save to history if logged in
     if (user) {
-      await supabase.from('generations').insert({
-        user_id: user.id,
-        product_name: productName,
-        keywords,
-        category,
-        tone,
-        language,
-        result,
-      })
-
-      const cost = variants ? 3 : 1
-      for (let i = 0; i < cost; i++) {
-        await supabase.rpc('increment_generations', { user_id: user.id })
+      if (variants && variantResults) {
+        // Save all 3 variants to history
+        await Promise.all(variantResults.map((variant, i) =>
+          supabase.from('generations').insert({
+            user_id: user.id,
+            product_name: `${productName} (variante ${i + 1})`,
+            keywords,
+            category,
+            tone,
+            language,
+            result: variant,
+          })
+        ))
+      } else {
+        await supabase.from('generations').insert({
+          user_id: user.id,
+          product_name: productName,
+          keywords,
+          category,
+          tone,
+          language,
+          result,
+        })
       }
+      // Note: quota was already atomically incremented by check_and_increment_quota RPC above
     }
 
     const response = NextResponse.json({

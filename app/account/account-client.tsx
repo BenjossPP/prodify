@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Zap, LogOut, Crown, User, Mail, Shield, ArrowRight,
-  Check, Eye, EyeOff, X, Tag
+  Check, Eye, EyeOff, X, Tag, Trash2, AlertTriangle
 } from 'lucide-react'
 
 const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', starter: 'Starter', pro: 'Pro', business: 'Business' }
@@ -53,6 +53,12 @@ export default function AccountClient({
   const [passwordSaving, setPasswordSaving] = useState(false)
   const [passwordSaved, setPasswordSaved] = useState(false)
   const [passwordError, setPasswordError] = useState('')
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteInput, setDeleteInput] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const { score, checks } = getPasswordStrength(newPassword)
   const passwordsMatch = confirmPassword.length > 0 && newPassword === confirmPassword
@@ -116,6 +122,30 @@ export default function AccountClient({
       setTimeout(() => setPasswordSaved(false), 3000)
     }
     setPasswordSaving(false)
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteInput !== 'SUPPRIMER') return
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/auth/account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation: 'SUPPRIMER' }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setDeleteError(data.error || 'Erreur lors de la suppression.')
+        setDeleting(false)
+        return
+      }
+      await supabase.auth.signOut()
+      router.push('/?deleted=true')
+    } catch {
+      setDeleteError('Erreur réseau. Réessayez.')
+      setDeleting(false)
+    }
   }
 
   return (
@@ -393,6 +423,81 @@ export default function AccountClient({
             <LogOut className="h-4 w-4" />
             Se déconnecter
           </Button>
+        </motion.div>
+
+        {/* Zone dangereuse — Supprimer le compte */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="p-5 rounded-2xl bg-red-500/[0.04] border border-red-500/[0.12]"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-white">Supprimer mon compte</h2>
+              <p className="text-xs text-white/30">Action irréversible — toutes vos données seront supprimées</p>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {!showDeleteConfirm ? (
+              <motion.div key="btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <Button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400/70 hover:text-red-400 hover:bg-red-500/10 rounded-xl gap-2 border border-red-500/20"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Supprimer mon compte
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div key="confirm" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                  <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-300/80">
+                    Cette action est <strong>irréversible</strong>. Votre compte, votre historique et vos données seront définitivement supprimés.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs text-white/40">Tapez <span className="font-mono text-red-400 font-semibold">SUPPRIMER</span> pour confirmer</label>
+                  <input
+                    type="text"
+                    value={deleteInput}
+                    onChange={e => setDeleteInput(e.target.value)}
+                    placeholder="SUPPRIMER"
+                    className="w-full bg-white/[0.04] border border-red-500/30 text-white placeholder:text-white/20 rounded-xl px-3 h-10 text-sm focus:outline-none focus:border-red-500/60"
+                  />
+                </div>
+                {deleteError && (
+                  <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">{deleteError}</p>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleDeleteAccount}
+                    disabled={deleteInput !== 'SUPPRIMER' || deleting}
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-500 text-white rounded-xl gap-1.5 disabled:opacity-40"
+                  >
+                    {deleting ? (
+                      <><div className="h-3.5 w-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Suppression...</>
+                    ) : (
+                      <><Trash2 className="h-3.5 w-3.5" /> Confirmer la suppression</>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteInput(''); setDeleteError('') }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/40 hover:text-white/70 rounded-xl"
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
       </div>

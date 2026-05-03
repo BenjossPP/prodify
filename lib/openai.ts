@@ -16,9 +16,11 @@ export interface GenerateProductSheetParams {
   keywords: string
   category: string
   tone: string
-  language: 'fr' | 'en'
+  language: 'fr' | 'en' | 'es' | 'de' | 'it' | 'nl'
   brandProfile?: BrandProfile
   variants?: boolean
+  imageBase64?: string
+  imageMimeType?: string
 }
 
 export interface ProductSheet {
@@ -51,7 +53,7 @@ const NICHE_PROMPTS_EN: Record<string, string> = {
   'Général': `You are an e-commerce copywriting expert. You generate SEO-optimized and conversion-focused product sheets. Your descriptions are catchy, precise and adapted to the requested tone.`,
 }
 
-function buildSystemPrompt(category: string, language: 'fr' | 'en', brandProfile?: BrandProfile): string {
+function buildSystemPrompt(category: string, language: string, brandProfile?: BrandProfile): string {
   const nicheMap = language === 'fr' ? NICHE_PROMPTS_FR : NICHE_PROMPTS_EN
   let base = nicheMap[category] || nicheMap['Général']
 
@@ -73,9 +75,15 @@ function buildSystemPrompt(category: string, language: 'fr' | 'en', brandProfile
 }
 
 function buildUserPrompt(params: GenerateProductSheetParams, variantIndex?: number): string {
-  const { productName, keywords, category, tone, language, variants } = params
+  const { productName, keywords, category, tone, language, variants, imageBase64 } = params
   const variantHint = variantIndex !== undefined
     ? (language === 'fr' ? ` (variante ${variantIndex + 1} sur 3 — approche différente)` : ` (variant ${variantIndex + 1} of 3 — different angle)`)
+    : ''
+
+  const imageHint = imageBase64
+    ? (language === 'fr'
+        ? '\n- Une image du produit est fournie ci-dessus — analyse-la pour enrichir la description avec les détails visuels (couleurs, matières, design, caractéristiques visibles).'
+        : '\n- A product image is provided above — analyze it to enrich the description with visual details (colors, materials, design, visible features).')
     : ''
 
   if (language === 'fr') {
@@ -83,7 +91,7 @@ function buildUserPrompt(params: GenerateProductSheetParams, variantIndex?: numb
 - Nom du produit : ${productName}
 - Mots-clés : ${keywords}
 - Catégorie : ${category}
-- Ton : ${tone}
+- Ton : ${tone}${imageHint}
 
 Retourne un JSON avec exactement cette structure :
 {
@@ -99,7 +107,7 @@ Retourne un JSON avec exactement cette structure :
 - Product name: ${productName}
 - Keywords: ${keywords}
 - Category: ${category}
-- Tone: ${tone}
+- Tone: ${tone}${imageHint}
 
 Return a JSON with exactly this structure:
 {
@@ -111,23 +119,75 @@ Return a JSON with exactly this structure:
 }`
 }
 
-async function generateSingle(params: GenerateProductSheetParams, variantIndex?: number): Promise<ProductSheet> {
+async function generateSingle(params: GenerateProductSheetParams, variantIndex?: number, retries = 3): Promise<ProductSheet> {
   const systemPrompt = buildSystemPrompt(params.category, params.language, params.brandProfile)
   const userPrompt = buildUserPrompt(params, variantIndex)
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ],
-    response_format: { type: 'json_object' },
-    temperature: 0.7,
-  })
+  // Use gpt-4o (vision) if an image is provided, otherwise gpt-4o-mini
+  const model = params.imageBase64 ? 'gpt-4o' : 'gpt-4o-mini'
 
-  const content = response.choices[0].message.content
-  if (!content) throw new Error('No content returned from OpenAI')
-  return JSON.parse(content) as ProductSheet
+  // Build user message — with or without image
+  type UserMessageContent =
+    | string
+    | Array<
+        | { type: 'text'; text: string }
+        | { type: 'image_url'; image_url: { url: string; detail: 'auto' } }
+      >
+
+  let userContent: UserMessageContent
+
+  if (params.imageBase64) {
+    const mimeType = params.imageMimeType || 'image/jpeg'
+    userContent = [
+      {
+        type: 'image_url',
+        image_url: {
+          url: `data:${mimeType};base64,${params.imageBase64}`,
+          detail: 'auto',
+        },
+      },
+      { type: 'text', text: userPrompt },
+    ]
+  } else {
+    userContent = userPrompt
+  }
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+      })
+
+      const content = response.choices[0].message.content
+      if (!content) throw new Error('No content returned from OpenAI')
+
+      let parsed: ProductSheet
+      try {
+        parsed = JSON.parse(content) as ProductSheet
+      } catch {
+        throw new Error(`OpenAI returned invalid JSON: ${content.slice(0, 200)}`)
+      }
+
+      // Validate required fields
+      if (!parsed.title || !parsed.description) {
+        throw new Error('OpenAI response missing required fields (title or description)')
+      }
+
+      return parsed
+    } catch (err) {
+      if (attempt === retries) throw err
+      // Exponential backoff: 500ms, 1000ms, 2000ms…
+      await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt - 1)))
+    }
+  }
+  // Unreachable, but required for TypeScript
+  throw new Error('generateSingle: exhausted retries')
 }
 
 export async function generateProductSheet(params: GenerateProductSheetParams): Promise<ProductSheet> {

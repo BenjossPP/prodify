@@ -331,7 +331,7 @@ function CheckCircleIcon({ className }: { className?: string }) {
 // ─── Editable Result Card ──────────────────────────────────────────────────────
 
 function EditableResultCard({
-  id, label, icon: Icon, content, onContentChange, copied, onCopy, multiline = false,
+  id, label, icon: Icon, content, onContentChange, copied, onCopy, multiline = false, maxLength,
 }: {
   id: string
   label: string
@@ -341,6 +341,7 @@ function EditableResultCard({
   copied: string | null
   onCopy: (text: string, id: string) => void
   multiline?: boolean
+  maxLength?: number
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(content)
@@ -356,6 +357,9 @@ function EditableResultCard({
     setEditing(false)
   }
 
+  const charCount = editing ? draft.length : content.length
+  const overLimit = maxLength ? charCount > maxLength : false
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -368,6 +372,11 @@ function EditableResultCard({
             <Icon className="h-3 w-3 text-purple-400" />
           </div>
           <span className="text-xs text-white/40 font-medium uppercase tracking-wide">{label}</span>
+          {maxLength && (
+            <span className={`text-xs tabular-nums transition-colors ${overLimit ? 'text-red-400' : 'text-white/20'}`}>
+              {charCount}/{maxLength}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           {!editing && (
@@ -391,8 +400,13 @@ function EditableResultCard({
               onChange={e => setDraft(e.target.value)}
               autoFocus
               rows={multiline ? 5 : 2}
-              className="w-full bg-white/[0.04] border border-purple-500/40 text-white text-sm rounded-xl p-2 resize-none focus:outline-none focus:border-purple-500/70"
+              className={`w-full bg-white/[0.04] text-white text-sm rounded-xl p-2 resize-none focus:outline-none transition-colors ${overLimit ? 'border border-red-500/50 focus:border-red-500/70' : 'border border-purple-500/40 focus:border-purple-500/70'}`}
             />
+            {maxLength && (
+              <p className={`text-xs mt-1 text-right tabular-nums ${overLimit ? 'text-red-400' : 'text-white/25'}`}>
+                {draft.length} / {maxLength} caractères
+              </p>
+            )}
             <div className="flex gap-2 mt-2">
               <button
                 onClick={commit}
@@ -445,12 +459,12 @@ function EditableProductSheetDisplay({ result, onResultChange, suffix, copied, o
       <EditableResultCard
         id={`title${s}`} label="Titre SEO" icon={FileText}
         content={result.title} onContentChange={v => onResultChange({ ...result, title: v })}
-        copied={copied} onCopy={onCopy}
+        copied={copied} onCopy={onCopy} maxLength={80}
       />
       <EditableResultCard
         id={`meta${s}`} label="Meta description" icon={Hash}
         content={result.metaDescription} onContentChange={v => onResultChange({ ...result, metaDescription: v })}
-        copied={copied} onCopy={onCopy}
+        copied={copied} onCopy={onCopy} maxLength={160}
       />
       <EditableResultCard
         id={`desc${s}`} label="Description" icon={AlignLeft}
@@ -892,6 +906,7 @@ export default function DashboardClient({
 
   // Preview modal
   const [showPreview, setShowPreview] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   // Inline edits — mutable copies of results
   const [editedResult, setEditedResult] = useState<ProductSheet | null>(null)
@@ -904,6 +919,7 @@ export default function DashboardClient({
   const [brandExample, setBrandExample] = useState(profile.brand_profile?.exampleText || '')
   const [brandSaving, setBrandSaving] = useState(false)
   const [brandSaved, setBrandSaved] = useState(false)
+  const [brandError, setBrandError] = useState('')
 
   // Templates state
   const [templates, setTemplates] = useState<SavedTemplate[]>(() => {
@@ -923,8 +939,39 @@ export default function DashboardClient({
   const [bulkProgress, setBulkProgress] = useState({ processed: 0, total: 0 })
   const [bulkResults, setBulkResults] = useState<BulkResult[]>([])
   const [bulkError, setBulkError] = useState('')
+
+  // History pagination
+  const [historyItems, setHistoryItems] = useState<Generation[]>(history)
+  const [historyOffset, setHistoryOffset] = useState(history.length)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyHasMore, setHistoryHasMore] = useState(history.length === 20)
+
+  async function loadMoreHistory() {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch(`/api/history?offset=${historyOffset}&limit=20`)
+      if (res.ok) {
+        const data = await res.json()
+        const newItems: Generation[] = data.items || []
+        setHistoryItems(prev => [...prev, ...newItems])
+        setHistoryOffset(prev => prev + newItems.length)
+        setHistoryHasMore(newItems.length === 20)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Cleanup poll interval on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
 
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -936,6 +983,45 @@ export default function DashboardClient({
       localStorage.setItem('shopscribe_onboarding_seen', '1')
     }
   }, [])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const meta = e.metaKey || e.ctrlKey
+      // Ctrl/Cmd + Enter → generate (only when not in a textarea/input other than productName/keywords)
+      if (meta && e.key === 'Enter') {
+        const tag = (e.target as HTMLElement).tagName
+        if (tag === 'TEXTAREA') return // don't trigger inside editing fields
+        e.preventDefault()
+        const form = document.querySelector<HTMLFormElement>('form[data-generate-form]')
+        if (form) form.requestSubmit()
+      }
+      // Ctrl/Cmd + Shift + C → copy all
+      if (meta && e.shiftKey && e.key === 'c') {
+        e.preventDefault()
+        const activeSheet = editedResult
+        if (activeSheet) {
+          navigator.clipboard.writeText(
+            `TITRE:\n${activeSheet.title}\n\nDESCRIPTION:\n${activeSheet.description}\n\nPOINTS CLÉS:\n${activeSheet.bulletPoints.map(b => `• ${b}`).join('\n')}\n\nMETA DESCRIPTION:\n${activeSheet.metaDescription}\n\nTAGS:\n${activeSheet.tags.join(', ')}`
+          )
+          setCopied('all')
+          setTimeout(() => setCopied(null), 2000)
+        }
+      }
+      // Escape → close export menu
+      if (e.key === 'Escape') setShowExportMenu(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [editedResult])
+
+  // Close export menu on outside click
+  useEffect(() => {
+    if (!showExportMenu) return
+    function onClickOutside() { setShowExportMenu(false) }
+    window.addEventListener('click', onClickOutside)
+    return () => window.removeEventListener('click', onClickOutside)
+  }, [showExportMenu])
 
   const limit = PLAN_LIMITS[profile.plan]
   const used = profile.generations_used
@@ -984,6 +1070,26 @@ export default function DashboardClient({
     )
   }
 
+  function copyForEtsy(sheet: ProductSheet) {
+    // Etsy: title max 140 chars, max 13 tags
+    const title = sheet.title.slice(0, 140)
+    const tags = sheet.tags.slice(0, 13).join(', ')
+    copy(
+      `TITRE ETSY (${title.length}/140):\n${title}\n\nDESCRIPTION:\n${sheet.description}\n\nTAGS (${sheet.tags.slice(0, 13).length}/13):\n${tags}`,
+      'etsy'
+    )
+  }
+
+  function copyForAmazon(sheet: ProductSheet) {
+    // Amazon: title max 200 chars, 5 bullet points as feature bullets
+    const title = sheet.title.slice(0, 200)
+    const bullets = sheet.bulletPoints.slice(0, 5).map(b => `• ${b}`).join('\n')
+    copy(
+      `TITRE AMAZON (${title.length}/200):\n${title}\n\nPOINTS PRODUIT:\n${bullets}\n\nDESCRIPTION:\n${sheet.description}`,
+      'amazon'
+    )
+  }
+
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -994,40 +1100,56 @@ export default function DashboardClient({
     setEditedVariants(null)
     setActiveVariant(0)
 
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productName, keywords, category, tone, language, variants: withVariants, imageBase64, imageMimeType }),
-    })
-    const data = await res.json()
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productName, keywords, category, tone, language, variants: withVariants, imageBase64, imageMimeType }),
+      })
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error || 'Erreur lors de la génération')
-    } else if (withVariants) {
-      setVariantResults(data.data)
-      setEditedVariants(data.data)
-      setResult(data.data[0])
-      setEditedResult(data.data[0])
-      router.refresh()
-    } else {
-      setResult(data.data)
-      setEditedResult(data.data)
-      router.refresh()
+      if (!res.ok) {
+        setError(data.error || 'Erreur lors de la génération')
+      } else if (withVariants) {
+        setVariantResults(data.data)
+        setEditedVariants(data.data)
+        setResult(data.data[0])
+        setEditedResult(data.data[0])
+        router.refresh()
+      } else {
+        setResult(data.data)
+        setEditedResult(data.data)
+        router.refresh()
+      }
+    } catch {
+      setError('Erreur réseau. Vérifiez votre connexion et réessayez.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function handleSaveBrand(e: React.FormEvent) {
     e.preventDefault()
     setBrandSaving(true)
-    await fetch('/api/brand-profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: brandDesc, keywords: brandKeywords, avoidWords: brandAvoid, exampleText: brandExample }),
-    })
-    setBrandSaving(false)
-    setBrandSaved(true)
-    setTimeout(() => setBrandSaved(false), 3000)
+    setBrandError('')
+    try {
+      const res = await fetch('/api/brand-profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: brandDesc, keywords: brandKeywords, avoidWords: brandAvoid, exampleText: brandExample }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setBrandError(data.error || 'Erreur lors de la sauvegarde')
+      } else {
+        setBrandSaved(true)
+        setTimeout(() => setBrandSaved(false), 3000)
+      }
+    } catch {
+      setBrandError('Erreur réseau. Vérifiez votre connexion et réessayez.')
+    } finally {
+      setBrandSaving(false)
+    }
   }
 
   // ─── Templates ───────────────────────────────────────────────────────────────
@@ -1098,15 +1220,20 @@ export default function DashboardClient({
   const pollJob = useCallback((jobId: string) => {
     if (pollRef.current) clearInterval(pollRef.current)
     pollRef.current = setInterval(async () => {
-      const res = await fetch(`/api/bulk/${jobId}`)
-      if (!res.ok) return
-      const job = await res.json()
-      setBulkProgress({ processed: job.processed, total: job.total })
-      if (job.results?.length) setBulkResults(job.results)
-      if (job.status === 'done' || job.status === 'error') {
-        clearInterval(pollRef.current!)
-        setBulkStatus(job.status)
-        router.refresh()
+      try {
+        const res = await fetch(`/api/bulk/${jobId}`)
+        if (!res.ok) return
+        const job = await res.json()
+        setBulkProgress({ processed: job.processed, total: job.total })
+        if (job.results?.length) setBulkResults(job.results)
+        if (job.status === 'done' || job.status === 'error') {
+          clearInterval(pollRef.current!)
+          setBulkStatus(job.status)
+          if (job.status === 'error') setBulkError('Une erreur est survenue pendant la génération.')
+          router.refresh()
+        }
+      } catch {
+        // Network error during poll — keep trying, don't crash
       }
     }, 2000)
   }, [router])
@@ -1117,21 +1244,26 @@ export default function DashboardClient({
     setBulkProgress({ processed: 0, total: bulkRows.length })
     setBulkError('')
 
-    const res = await fetch('/api/bulk', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows: bulkRows }),
-    })
-    const data = await res.json()
+    try {
+      const res = await fetch('/api/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: bulkRows }),
+      })
+      const data = await res.json()
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setBulkStatus('error')
+        setBulkError(data.error || 'Erreur lors du lancement')
+        return
+      }
+
+      setBulkJobId(data.jobId)
+      pollJob(data.jobId)
+    } catch {
       setBulkStatus('error')
-      setBulkError(data.error || 'Erreur lors du lancement')
-      return
+      setBulkError('Erreur réseau. Vérifiez votre connexion et réessayez.')
     }
-
-    setBulkJobId(data.jobId)
-    pollJob(data.jobId)
   }
 
   function downloadBulkCSV() {
@@ -1292,7 +1424,7 @@ export default function DashboardClient({
                 className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065]"
               >
                 <h2 className="text-base font-semibold text-white mb-5">Votre produit</h2>
-                <form onSubmit={handleGenerate} className="space-y-4">
+                <form onSubmit={handleGenerate} data-generate-form className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-white/45 text-xs font-medium uppercase tracking-wide">Nom du produit *</Label>
                     <Input
@@ -1668,13 +1800,61 @@ export default function DashboardClient({
                               >
                                 <Eye className="h-3 w-3" /> Prévisualiser
                               </button>
-                              <button
-                                onClick={() => copyAll(displayResult)}
-                                className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.065] hover:border-white/10"
-                              >
-                                {copied === 'all' ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
-                                Tout copier
-                              </button>
+                              {/* Export dropdown */}
+                              <div className="relative">
+                                <button
+                                  onClick={() => setShowExportMenu(v => !v)}
+                                  className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.065] hover:border-white/10"
+                                >
+                                  {copied === 'all' || copied === 'etsy' || copied === 'amazon'
+                                    ? <Check className="h-3 w-3 text-green-400" />
+                                    : <Copy className="h-3 w-3" />}
+                                  Exporter <ChevronDown className="h-3 w-3" />
+                                </button>
+                                <AnimatePresence>
+                                  {showExportMenu && (
+                                    <motion.div
+                                      initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                                      exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                                      transition={{ duration: 0.12 }}
+                                      className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl bg-[#13131f] border border-white/[0.1] shadow-xl overflow-hidden"
+                                    >
+                                      <button
+                                        onClick={() => { copyAll(displayResult); setShowExportMenu(false) }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors text-left"
+                                      >
+                                        <Copy className="h-3.5 w-3.5 text-white/30 shrink-0" />
+                                        <div>
+                                          <p className="font-medium">Tout copier</p>
+                                          <p className="text-white/30">Format standard</p>
+                                        </div>
+                                      </button>
+                                      <div className="h-px bg-white/[0.06] mx-3" />
+                                      <button
+                                        onClick={() => { copyForEtsy(displayResult); setShowExportMenu(false) }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors text-left"
+                                      >
+                                        <span className="text-base leading-none shrink-0">🛍️</span>
+                                        <div>
+                                          <p className="font-medium">Format Etsy</p>
+                                          <p className="text-white/30">Titre 140 car. · 13 tags max</p>
+                                        </div>
+                                      </button>
+                                      <button
+                                        onClick={() => { copyForAmazon(displayResult); setShowExportMenu(false) }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors text-left"
+                                      >
+                                        <span className="text-base leading-none shrink-0">📦</span>
+                                        <div>
+                                          <p className="font-medium">Format Amazon</p>
+                                          <p className="text-white/30">Titre 200 car. · 5 bullets</p>
+                                        </div>
+                                      </button>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             </div>
                           </div>
                           <EditableProductSheetDisplay
@@ -1705,7 +1885,23 @@ export default function DashboardClient({
 
           {/* ── Onglet Masse ───────────────────────────────────────────────────── */}
           <TabsContent value="bulk">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative space-y-4">
+
+              {/* ── Overlay Pro ── */}
+              {profile.plan === 'free' && (
+                <div className="absolute inset-0 z-10 rounded-2xl flex flex-col items-center justify-center text-center bg-[#080810]/80 backdrop-blur-sm px-6 py-16 border border-white/[0.065]">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                    <Crown className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white mb-1">Fonctionnalité Pro</h3>
+                  <p className="text-sm text-white/40 mb-6 max-w-xs">La génération en masse (CSV) est réservée aux plans payants. Passez au plan Starter ou supérieur pour débloquer cette fonctionnalité.</p>
+                  <Link href="/pricing">
+                    <Button className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-10 gap-2 font-medium px-6">
+                      <Crown className="h-4 w-4" /> Passer Pro <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
 
               {bulkStatus === 'idle' && (
                 <>
@@ -1847,7 +2043,23 @@ export default function DashboardClient({
 
           {/* ── Onglet Ma Marque ───────────────────────────────────────────────── */}
           <TabsContent value="brand">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative">
+
+              {/* ── Overlay Pro ── */}
+              {profile.plan === 'free' && (
+                <div className="absolute inset-0 z-10 rounded-2xl flex flex-col items-center justify-center text-center bg-[#080810]/80 backdrop-blur-sm px-6 py-16 border border-white/[0.065]">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                    <Crown className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-white mb-1">Fonctionnalité Pro</h3>
+                  <p className="text-sm text-white/40 mb-6 max-w-xs">Le profil de marque est réservé aux plans payants. Passez au plan Starter ou supérieur pour personnaliser le ton de votre marque.</p>
+                  <Link href="/pricing">
+                    <Button className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl h-10 gap-2 font-medium px-6">
+                      <Crown className="h-4 w-4" /> Passer Pro <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
               <div className="max-w-2xl">
                 <div className="mb-6">
                   <h2 className="text-base font-semibold text-white">Ton de marque</h2>
@@ -1903,6 +2115,13 @@ export default function DashboardClient({
                       <><Save className="h-3.5 w-3.5" /> Sauvegarder le profil de marque</>
                     )}
                   </Button>
+
+                  {brandError && (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {brandError}
+                    </div>
+                  )}
                 </form>
               </div>
             </motion.div>
@@ -1911,7 +2130,7 @@ export default function DashboardClient({
           {/* ── Onglet Historique ──────────────────────────────────────────────── */}
           <TabsContent value="history">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065]">
-              {history.length === 0 ? (
+              {historyItems.length === 0 ? (
                 <div className="text-center text-white/20 py-16">
                   <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.065] flex items-center justify-center mx-auto mb-4">
                     <History className="h-6 w-6 text-white/15" />
@@ -1921,9 +2140,24 @@ export default function DashboardClient({
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {history.map((gen, i) => (
+                  {historyItems.map((gen, i) => (
                     <HistoryItem key={gen.id} gen={gen} index={i} onCopyAll={copyAll} copied={copied} onCopy={copy} />
                   ))}
+                  {historyHasMore && (
+                    <div className="pt-2 text-center">
+                      <button
+                        onClick={loadMoreHistory}
+                        disabled={historyLoading}
+                        className="flex items-center gap-2 mx-auto text-xs text-white/40 hover:text-white/70 transition-colors px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.065] hover:border-white/10 disabled:opacity-50"
+                      >
+                        {historyLoading ? (
+                          <><div className="h-3 w-3 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Chargement...</>
+                        ) : (
+                          <><RefreshCw className="h-3 w-3" /> Voir plus</>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
