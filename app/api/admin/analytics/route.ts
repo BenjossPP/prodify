@@ -74,7 +74,7 @@ export async function GET() {
       phQuerySafe(`
         SELECT
           count() as pageviews,
-          count(DISTINCT session_id) as sessions,
+          count(DISTINCT properties.$session_id) as sessions,
           count(DISTINCT person_id) as unique_visitors
         FROM events
         WHERE event = '$pageview'
@@ -88,15 +88,14 @@ export async function GET() {
         WHERE timestamp >= now() - INTERVAL 5 MINUTE
       `),
 
-      // Répartition par pays (30 derniers jours)
+      // Répartition par pays (90 derniers jours — plus de données)
       phQuerySafe(`
         SELECT
           properties.$geoip_country_code as country_code,
           properties.$geoip_country_name as country_name,
-          count(DISTINCT session_id) as sessions
+          count(DISTINCT properties.$session_id) as sessions
         FROM events
-        WHERE event = '$pageview'
-          AND timestamp >= now() - INTERVAL 30 DAY
+        WHERE timestamp >= now() - INTERVAL 90 DAY
           AND properties.$geoip_country_code IS NOT NULL
           AND properties.$geoip_country_code != ''
         GROUP BY country_code, country_name
@@ -108,7 +107,7 @@ export async function GET() {
       phQuerySafe(`
         SELECT
           properties.$referring_domain as domain,
-          count(DISTINCT session_id) as sessions
+          count(DISTINCT properties.$session_id) as sessions
         FROM events
         WHERE event = '$pageview'
           AND timestamp >= now() - INTERVAL 30 DAY
@@ -122,7 +121,7 @@ export async function GET() {
         SELECT
           properties.$pathname as path,
           count() as views,
-          count(DISTINCT session_id) as sessions
+          count(DISTINCT properties.$session_id) as sessions
         FROM events
         WHERE event = '$pageview'
           AND timestamp >= now() - INTERVAL 7 DAY
@@ -137,7 +136,7 @@ export async function GET() {
         SELECT
           toDate(timestamp) as day,
           count() as pageviews,
-          count(DISTINCT session_id) as sessions
+          count(DISTINCT properties.$session_id) as sessions
         FROM events
         WHERE event = '$pageview'
           AND timestamp >= now() - INTERVAL 30 DAY
