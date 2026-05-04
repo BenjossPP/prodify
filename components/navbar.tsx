@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Tag, ArrowRight, LayoutDashboard, User, Menu, X, BadgeDollarSign, Layers, LogIn } from 'lucide-react'
+import { Tag, ArrowRight, LayoutDashboard, User, Menu, X, BadgeDollarSign, Layers, LogIn, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [sessionLoading, setSessionLoading] = useState(true)
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -22,10 +23,12 @@ export function Navbar() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session)
+      setIsAdmin(session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL)
       setSessionLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session)
+      setIsAdmin(session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL)
       setSessionLoading(false)
     })
     return () => subscription.unsubscribe()
@@ -59,7 +62,9 @@ export function Navbar() {
     { href: '/#features', label: 'Fonctionnalités', icon: Layers },
     { href: '/pricing', label: 'Tarifs', icon: BadgeDollarSign },
     ...(isLoggedIn
-      ? [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }]
+      ? isAdmin
+        ? [{ href: '/admin', label: 'Admin', icon: Shield }]
+        : [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }]
       : [{ href: '/login', label: 'Connexion', icon: LogIn }]
     ),
   ]
@@ -112,10 +117,10 @@ export function Navbar() {
                 <div className="w-48 h-9 rounded-xl bg-white/[0.04] animate-pulse" />
               ) : isLoggedIn ? (
                 <>
-                  <Link href="/dashboard">
+                  <Link href={isAdmin ? '/admin' : '/dashboard'}>
                     <button className="flex items-center gap-2 px-3.5 py-2 text-sm text-white/50 hover:text-white/85 hover:bg-white/[0.05] rounded-xl transition-all duration-200">
-                      <LayoutDashboard className="h-3.5 w-3.5" />
-                      Dashboard
+                      {isAdmin ? <Shield className="h-3.5 w-3.5" /> : <LayoutDashboard className="h-3.5 w-3.5" />}
+                      {isAdmin ? 'Admin' : 'Dashboard'}
                     </button>
                   </Link>
                   <Link href="/account">
