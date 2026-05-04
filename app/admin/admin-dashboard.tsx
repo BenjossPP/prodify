@@ -160,11 +160,13 @@ export default function AdminDashboard({ data, adminEmail }: { data: AdminData; 
     try {
       const res = await fetch('/api/admin/analytics')
       if (!res.ok) {
-        const err = await res.json()
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
         throw new Error(err.error || `HTTP ${res.status}`)
       }
-      setAnalyticsData(await res.json())
+      const json = await res.json()
+      setAnalyticsData(json)
     } catch (e) {
+      console.error('[analytics]', e)
       setAnalyticsError(String(e))
     } finally {
       setAnalyticsLoading(false)
@@ -173,10 +175,10 @@ export default function AdminDashboard({ data, adminEmail }: { data: AdminData; 
 
   // Charger analytics au premier clic sur l'onglet
   useEffect(() => {
-    if (activeTab === 'analytics' && !analyticsData && !analyticsLoading) {
+    if (activeTab === 'analytics' && !analyticsData && !analyticsLoading && !analyticsError) {
       loadAnalytics()
     }
-  }, [activeTab, analyticsData, analyticsLoading, loadAnalytics])
+  }, [activeTab, analyticsData, analyticsLoading, analyticsError, loadAnalytics])
 
   async function refresh() {
     setIsRefreshing(true)

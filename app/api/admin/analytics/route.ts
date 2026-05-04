@@ -6,22 +6,39 @@ const PH_HOST = 'https://eu.posthog.com'
 const PH_PROJECT = process.env.POSTHOG_PROJECT_ID!
 const PH_KEY = process.env.POSTHOG_PERSONAL_API_KEY!
 
-async function phQuery(query: string) {
-  const res = await fetch(`${PH_HOST}/api/projects/${PH_PROJECT}/query`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${PH_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
-    next: { revalidate: 60 }, // cache 60s
-  })
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`PostHog query failed: ${res.status} — ${text}`)
+async function phQuery(query: string): Promise<unknown[][]> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 12000) // 12s timeout
+  try {
+    const res = await fetch(`${PH_HOST}/api/projects/${PH_PROJECT}/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PH_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: { kind: 'HogQLQuery', query } }),
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`PostHog query failed: ${res.status} — ${text}`)
+    }
+    const json = await res.json()
+    return (json.results as unknown[][]) ?? []
+  } finally {
+    clearTimeout(timeout)
   }
-  const json = await res.json()
-  return json.results as unknown[][]
+}
+
+// Version sécurisée qui retourne [] en cas d'erreur
+async function phQuerySafe(query: string): Promise<unknown[][]> {
+  try {
+    return await phQuery(query)
+  } catch (e) {
+    console.error('[phQuerySafe]', e)
+    return []
+  }
 }
 
 export async function GET() {
@@ -54,7 +71,7 @@ export async function GET() {
       dailyRows,
     ] = await Promise.all([
       // Pageviews + sessions uniques sur 7 jours
-      phQuery(`
+      phQuerySafe(`
         SELECT
           count() as pageviews,
           count(DISTINCT session_id) as sessions,
@@ -65,14 +82,14 @@ export async function GET() {
       `),
 
       // Utilisateurs "en ligne" — sessions actives dans les 5 dernières minutes
-      phQuery(`
+      phQuerySafe(`
         SELECT count(DISTINCT person_id) as online
         FROM events
         WHERE timestamp >= now() - INTERVAL 5 MINUTE
       `),
 
       // Répartition par pays (30 derniers jours)
-      phQuery(`
+      phQuerySafe(`
         SELECT
           properties.$geoip_country_code as country_code,
           properties.$geoip_country_name as country_name,
@@ -87,8 +104,8 @@ export async function GET() {
         LIMIT 50
       `),
 
-      // Sources de trafic (30 derniers jours) — premier referrer de session
-      phQuery(`
+      // Sources de trafic (30 derniers jours)
+      phQuerySafe(`
         SELECT
           properties.$referring_domain as domain,
           count(DISTINCT session_id) as sessions
@@ -101,7 +118,7 @@ export async function GET() {
       `),
 
       // Top pages visitées (7 derniers jours)
-      phQuery(`
+      phQuerySafe(`
         SELECT
           properties.$pathname as path,
           count() as views,
@@ -116,7 +133,7 @@ export async function GET() {
       `),
 
       // Pageviews par jour (30 derniers jours)
-      phQuery(`
+      phQuerySafe(`
         SELECT
           toDate(timestamp) as day,
           count() as pageviews,
