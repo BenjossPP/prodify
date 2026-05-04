@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Zap, CheckCircle, ArrowRight, X as XIcon } from 'lucide-react'
+import { Zap, CheckCircle, ArrowRight, X as XIcon, TrendingUp } from 'lucide-react'
 import { FadeIn, StaggerContainer, StaggerItem, AnimatedBadge, TextReveal } from '@/components/animations'
 import { Navbar } from '@/components/navbar'
 
@@ -237,6 +237,43 @@ export default function PricingPage() {
             ))}
           </StaggerContainer>
 
+          {/* Bandeau comparatif concurrence */}
+          <FadeIn delay={0.3} blur>
+            <motion.div
+              className="relative mt-10 sm:mt-12 rounded-2xl border border-green-500/20 bg-green-500/[0.04] px-5 py-4 sm:px-7 sm:py-5 overflow-hidden"
+              whileHover={{ borderColor: 'rgba(34,197,94,0.3)', transition: { duration: 0.2 } }}
+            >
+              <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-green-400/25 to-transparent" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/12 border border-green-500/20 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                    <TrendingUp className="h-4 w-4 text-green-400" />
+                  </div>
+                  <div>
+                    <div className="text-white/90 font-semibold text-sm sm:text-[15px]">
+                      2x moins cher que la concurrence
+                    </div>
+                    <div className="text-white/42 text-xs sm:text-sm mt-0.5">
+                      Les alternatives facturent en moyenne <span className="text-white/60 font-medium">0,75$/fiche</span> ou démarrent à <span className="text-white/60 font-medium">59–99$/mois</span> en abonnement. ShopScribe, c&apos;est <span className="text-green-400 font-semibold">dès 0,29€ la fiche</span>, sans engagement.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-5 sm:gap-7 shrink-0 pl-11 sm:pl-0">
+                  {[
+                    { label: 'Alternatives', price: '0,75$/fiche', strike: true },
+                    { label: 'Abonnements', price: '59$/mois', strike: true },
+                    { label: 'ShopScribe', price: 'dès 0,29€', strike: false, highlight: true },
+                  ].map(({ label, price, strike, highlight }) => (
+                    <div key={label} className="text-center">
+                      <div className="text-white/22 text-[10px] uppercase tracking-wide mb-1">{label}</div>
+                      <div className={`font-semibold text-sm ${highlight ? 'text-green-400' : 'text-white/40 line-through decoration-red-400/50'}`}>{price}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </FadeIn>
+
           {/* Reassurance */}
           <FadeIn delay={0.5} blur>
             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-8 mt-12 sm:mt-14 text-white/28 text-sm">
@@ -303,6 +340,111 @@ export default function PricingPage() {
                 </tbody>
               </table>
             </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── Competitor comparison ─────────────────────────────────────────────── */}
+      <section className="px-4 sm:px-6 py-16 sm:py-20 border-t border-white/[0.055]">
+        <div className="max-w-4xl mx-auto">
+          <FadeIn blur>
+            <div className="text-center mb-10 sm:mb-12">
+              <h2 className="text-2xl sm:text-3xl font-heading font-semibold text-white mb-3">
+                Pourquoi ShopScribe ?
+              </h2>
+              <p className="text-white/38 text-sm sm:text-base max-w-md mx-auto">
+                Les alternatives coûtent jusqu&apos;à <span className="text-white/65">10x plus cher</span> et ne sont pas spécialisées e-commerce.
+              </p>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.15}>
+            <div className="overflow-x-auto rounded-2xl border border-white/[0.07]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.07]">
+                    <th className="text-left px-5 py-4 text-white/38 font-medium w-[35%]"></th>
+                    {[
+                      { name: 'ShopScribe', highlight: true },
+                      { name: 'Outils pay-as-you-go', highlight: false },
+                      { name: 'Outils généralistes', highlight: false },
+                      { name: 'Abonnements low-cost', highlight: false },
+                    ].map(({ name, highlight }) => (
+                      <th key={name} className={`px-4 py-4 font-semibold text-center text-sm ${highlight ? 'text-purple-300' : 'text-white/45'}`}>
+                        {highlight && <span className="block text-[10px] text-green-400/80 font-normal mb-0.5">✓ Notre choix</span>}
+                        {name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      label: 'Prix',
+                      values: [
+                        { text: 'dès 0,29€/fiche', green: true },
+                        { text: '~0,75$/fiche', green: false },
+                        { text: '59–99$/mois', green: false },
+                        { text: '7–30$/mois', green: false },
+                      ],
+                    },
+                    {
+                      label: 'Modèle de paiement',
+                      values: [
+                        { text: 'One-time ✓', green: true },
+                        { text: 'Pay-as-you-go', green: false },
+                        { text: 'Abonnement mensuel', green: false },
+                        { text: 'Abonnement mensuel', green: false },
+                      ],
+                    },
+                    {
+                      label: 'Spécialisé e-commerce',
+                      values: [true, true, false, false],
+                    },
+                    {
+                      label: 'Génération en masse (CSV)',
+                      values: [true, true, false, false],
+                    },
+                    {
+                      label: 'SEO optimisé (title, meta, tags)',
+                      values: [true, true, false, false],
+                    },
+                    {
+                      label: 'Sans abonnement',
+                      values: [true, true, false, false],
+                    },
+                    {
+                      label: 'Prix d\'entrée',
+                      values: [
+                        { text: 'Gratuit', green: true },
+                        { text: '~0,75$/produit', green: false },
+                        { text: '59$/mois', green: false },
+                        { text: '7$/mois', green: false },
+                      ],
+                    },
+                  ].map(({ label, values }) => (
+                    <tr key={label} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.015] transition-colors">
+                      <td className="px-5 py-3.5 text-white/52">{label}</td>
+                      {values.map((v, i) => (
+                        <td key={i} className={`px-4 py-3.5 text-center ${i === 0 ? 'bg-purple-600/[0.04]' : ''}`}>
+                          {typeof v === 'boolean' ? (
+                            v
+                              ? <CheckCircle className={`h-4 w-4 mx-auto ${i === 0 ? 'text-purple-400' : 'text-white/28'}`} />
+                              : <XIcon className="h-4 w-4 text-white/15 mx-auto" />
+                          ) : (
+                            <span className={`font-medium text-xs sm:text-sm ${v.green ? 'text-green-400' : 'text-white/38'}`}>{v.text}</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.3}>
+            <p className="text-center mt-5 text-white/25 text-xs">
+              Comparaison basée sur les prix publics du marché en mai 2026.
+            </p>
           </FadeIn>
         </div>
       </section>

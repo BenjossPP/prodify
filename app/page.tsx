@@ -557,12 +557,47 @@ export default function HomePage() {
       <section className="px-4 sm:px-6 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto">
           <FadeIn blur>
-            <div className="text-center mb-12 sm:mb-14">
+            <div className="text-center mb-10 sm:mb-12">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading font-semibold text-white mb-4">
                 <TextReveal text="Tarifs simples" />
               </h2>
               <p className="text-white/42 text-base sm:text-lg">Commencez gratuitement, évoluez sans friction.</p>
             </div>
+          </FadeIn>
+
+          {/* Bandeau comparatif */}
+          <FadeIn delay={0.2} blur>
+            <motion.div
+              className="relative mb-10 sm:mb-12 rounded-2xl border border-green-500/20 bg-green-500/[0.05] px-5 py-4 sm:px-7 sm:py-5 overflow-hidden"
+              whileHover={{ borderColor: 'rgba(34,197,94,0.35)', transition: { duration: 0.2 } }}
+            >
+              <div className="absolute top-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-green-400/30 to-transparent" />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/15 border border-green-500/20 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                    <TrendingUp className="h-4 w-4 text-green-400" />
+                  </div>
+                  <div>
+                    <div className="text-white/90 font-semibold text-sm sm:text-base">
+                      2x moins cher que la concurrence
+                    </div>
+                    <div className="text-white/45 text-xs sm:text-sm mt-0.5">
+                      Les alternatives facturent en moyenne <span className="text-white/65 font-medium">0,75$ par fiche</span> en abonnement mensuel. Ici c&apos;est <span className="text-green-400 font-semibold">dès 0,29€</span>, paiement unique.
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-4 sm:gap-6 shrink-0 text-xs text-white/38 pl-11 sm:pl-0">
+                  <div className="text-center">
+                    <div className="text-white/22 text-[10px] uppercase tracking-wide mb-1">Alternatives</div>
+                    <div className="text-white/50 font-medium line-through decoration-red-400/60">0,75$/fiche</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white/22 text-[10px] uppercase tracking-wide mb-1">ShopScribe</div>
+                    <div className="text-green-400 font-bold text-sm">dès 0,29€</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </FadeIn>
 
           <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" staggerDelay={0.1}>
