@@ -190,3 +190,70 @@ export async function sendPurchaseConfirmationEmail(
     console.error('[Resend] sendPurchaseConfirmationEmail error:', err)
   }
 }
+
+export async function sendContactEmail(params: {
+  name: string
+  email: string
+  subject: string
+  message: string
+}) {
+  const { name, email, subject, message } = params
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: 'support@shopscribe-ai.com',
+      replyTo: email,
+      subject: `[Contact] ${subject}`,
+      html: `
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8" /></head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background:#0f172a;padding:24px 40px;">
+              <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">ShopScribe — Nouveau message de contact</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px;width:100px;">Nom</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:14px;font-weight:500;">${name}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px;">Email</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:14px;font-weight:500;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px;">Sujet</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:14px;font-weight:500;">${subject}</td>
+                </tr>
+              </table>
+              <hr style="margin:0 0 24px;border:none;border-top:1px solid #e2e8f0;" />
+              <p style="margin:0;color:#0f172a;font-size:14px;font-weight:600;margin-bottom:10px;">Message :</p>
+              <p style="margin:0;color:#475569;font-size:14px;line-height:1.7;white-space:pre-wrap;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#f8fafc;padding:16px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">Répondre directement à cet email pour contacter ${name}.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+      `.trim(),
+    })
+  } catch (err) {
+    console.error('[Resend] sendContactEmail error:', err)
+    throw err
+  }
+}
