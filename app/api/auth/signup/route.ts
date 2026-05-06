@@ -35,8 +35,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Une erreur est survenue. Veuillez réessayer.' }, { status: 400 })
   }
 
-  // Envoyer l'email de bienvenue (non bloquant)
-  sendWelcomeEmail(email, first_name || 'là')
+  // Envoyer l'email de bienvenue
+  try {
+    await sendWelcomeEmail(email, first_name || 'là')
+  } catch (emailErr) {
+    console.error('[signup] Failed to send welcome email:', emailErr)
+  }
 
   return NextResponse.json({ user: data.user }, { status: 201 })
 }

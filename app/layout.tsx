@@ -17,8 +17,43 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ShopScribe — Fiches produits en 10 secondes",
+  metadataBase: new URL('https://shopscribe-ai.com'),
+  title: {
+    default: 'ShopScribe — Fiches produits en 10 secondes',
+    template: '%s | ShopScribe',
+  },
   description: "Générez des fiches produits optimisées SEO avec l'IA. Titres, descriptions, bullet points, meta descriptions en français et anglais.",
+  keywords: ['fiche produit', 'SEO', 'e-commerce', 'IA', 'Shopify', 'Etsy', 'Amazon', 'ChatGPT', 'GPT-4'],
+  authors: [{ name: 'ShopScribe' }],
+  creator: 'ShopScribe',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: 'https://shopscribe-ai.com',
+    siteName: 'ShopScribe',
+    title: 'ShopScribe — Fiches produits en 10 secondes',
+    description: "Générez des fiches produits optimisées SEO avec l'IA. Titres, descriptions, bullet points, meta descriptions en français et anglais.",
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'ShopScribe — Fiches produits IA en 10 secondes',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ShopScribe — Fiches produits en 10 secondes',
+    description: "Générez des fiches produits optimisées SEO avec l'IA.",
+    images: ['/og-image.svg'],
+    creator: '@shopscribe',
+  },
 };
 
 export default function RootLayout({

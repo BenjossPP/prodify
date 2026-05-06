@@ -844,6 +844,11 @@ export default function HomePage() {
           </div>
           <div className="border-t border-white/[0.04] pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-white/20 text-xs">© {new Date().getFullYear()} ShopScribe. Tous droits réservés.</p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-white/20">
+              <Link href="/mentions-legales" className="hover:text-white/45 transition-colors">Mentions légales</Link>
+              <Link href="/cgv" className="hover:text-white/45 transition-colors">CGV</Link>
+              <Link href="/confidentialite" className="hover:text-white/45 transition-colors">Confidentialité</Link>
+            </div>
             <p className="text-white/15 text-xs">Généré par GPT-4o · Paiement sécurisé par Stripe</p>
           </div>
         </div>

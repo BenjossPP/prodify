@@ -21,22 +21,27 @@ export default function ForgotPasswordPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
 
-    if (error) {
-      // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
-      // On affiche toujours le succès, sauf erreur réseau
-      if (error.message.includes('network') || error.message.includes('fetch')) {
-        setError('Erreur de connexion. Vérifiez votre connexion internet.')
-        setLoading(false)
-        return
+      if (error) {
+        // Ne pas révéler si l'email existe ou non pour des raisons de sécurité
+        // On affiche toujours le succès, sauf erreur réseau
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          setError('Erreur de connexion. Vérifiez votre connexion internet.')
+          setLoading(false)
+          return
+        }
       }
-    }
 
-    setSent(true)
-    setLoading(false)
+      setSent(true)
+      setLoading(false)
+    } catch {
+      setError('Erreur de connexion. Vérifiez votre connexion internet.')
+      setLoading(false)
+    }
   }
 
   if (sent) {
