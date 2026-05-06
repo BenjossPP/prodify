@@ -122,10 +122,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
               {/* Header */}
               <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 12, background: 'linear-gradient(135deg, #a855f7, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(147,51,234,0.3)', flexShrink: 0 }}>
-                    <Tag style={{ width: 16, height: 16, color: 'white' }} />
-                  </div>
-                  <span style={{ color: 'white', fontWeight: 600, letterSpacing: '-0.02em', fontSize: 15 }}>ShopScribe</span>
+                  <img src="/Logo SS.png" alt="ShopScribe" style={{ height: 32, width: 'auto' }} />
                 </div>
                 <motion.button
                   onClick={() => setOpen(false)}

@@ -828,11 +828,8 @@ export default function HomePage() {
       <footer className="border-t border-white/[0.055] px-4 sm:px-6 py-10">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-                <Tag className="h-3 w-3 text-white" />
-              </div>
-              <span className="text-white/65 font-medium text-sm tracking-tight">ShopScribe</span>
+            <div className="flex items-center gap-2.5 ">
+              <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto opacity-65" />
             </div>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-white/30">
               <Link href="/pricing" className="hover:text-white/65 transition-colors">Tarifs</Link>

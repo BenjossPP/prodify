@@ -100,11 +100,8 @@ export default function ForgotPasswordPage() {
       >
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:shadow-purple-600/50 transition-shadow">
-              <Tag className="h-4.5 w-4.5 text-white" />
-            </div>
-            <span className="text-xl font-semibold tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">ShopScribe</span>
+          <Link href="/" className="flex items-center gap-2 group ">
+            <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
           </Link>
         </div>
 

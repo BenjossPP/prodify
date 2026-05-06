@@ -85,13 +85,7 @@ export function Navbar() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:shadow-purple-600/55 transition-shadow duration-300">
-                <Tag className="h-4 w-4 text-white" />
-                <div className="absolute inset-0 rounded-xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-              <span className="text-base font-semibold tracking-tight bg-gradient-to-r from-white to-white/75 bg-clip-text text-transparent">
-                ShopScribe
-              </span>
+              <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
             </Link>
 
             {/* Links desktop */}
@@ -199,10 +193,7 @@ export function Navbar() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 12, background: 'linear-gradient(135deg, #a855f7, #7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Tag style={{ width: 16, height: 16, color: 'white' }} />
-                </div>
-                <span style={{ color: 'white', fontWeight: 600, letterSpacing: '-0.02em', fontSize: 15 }}>ShopScribe</span>
+                <img src="/Logo SS.png" alt="ShopScribe" style={{ height: 32, width: 'auto' }} />
               </div>
               <button
                 onClick={() => setMenuOpen(false)}

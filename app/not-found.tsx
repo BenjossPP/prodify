@@ -15,15 +15,8 @@ export default function NotFound() {
 
       <div className="relative z-10 text-center max-w-lg">
         {/* Logo */}
-        <Link href="/" className="inline-flex items-center gap-2 mb-12">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
-          </div>
-          <span className="text-white font-semibold text-lg">ShopScribe</span>
+        <Link href="/" className="inline-flex items-center gap-2 mb-12 ">
+          <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
         </Link>
 
         {/* 404 */}

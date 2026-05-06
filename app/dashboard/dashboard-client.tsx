@@ -1651,11 +1651,8 @@ export default function DashboardClient({
 
       {/* ── Mobile top bar ────────────────────────────────────────────────────── */}
       <header className="lg:hidden sticky top-0 z-40 bg-[#07070f]/90 backdrop-blur-xl border-b border-white/[0.06] px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-md shadow-purple-600/30">
-            <Tag className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-white/80">ShopScribe</span>
+        <Link href="/" className="flex items-center gap-2 ">
+              <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${planColor}`}>
@@ -1692,14 +1689,8 @@ export default function DashboardClient({
 
           {/* Logo */}
           <div className="px-5 pt-6 pb-5 border-b border-white/[0.055]">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/40 transition-shadow">
-                <Tag className="h-4.5 w-4.5 h-[18px] w-[18px] text-white" />
-              </div>
-              <div>
-                <span className="font-semibold text-white/90 tracking-tight">ShopScribe</span>
-                <p className="text-xs text-white/28 -mt-0.5">Fiches produits IA</p>
-              </div>
+            <Link href="/" className="flex items-center gap-2.5 group ">
+          <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
             </Link>
           </div>
 

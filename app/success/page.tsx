@@ -48,11 +48,8 @@ function SuccessContent() {
       <div className="relative z-10 max-w-md w-full text-center">
 
         {/* Logo */}
-        <Link href="/" className="inline-flex items-center gap-2 mb-12 opacity-60 hover:opacity-100 transition-opacity">
-          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-md shadow-purple-600/30">
-            <Tag className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-white/80 tracking-tight">ShopScribe</span>
+        <Link href="/" className="inline-flex items-center gap-2 mb-12 opacity-60 hover:opacity-100 transition-opacity ">
+          <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
         </Link>
 
         {/* Checkmark animé */}
