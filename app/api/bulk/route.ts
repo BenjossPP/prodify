@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
 
   const body = await request.json()
-  const { rows } = body as { rows: Array<{ productName: string; keywords: string; category?: string; tone?: string; language?: string }> }
+  const { rows } = body as { rows: Array<{ productName: string; keywords: string; category?: string; tone?: string; language?: string; price?: string; targetAudience?: string; mainArgument?: string; platform?: string }> }
 
   if (!rows || !Array.isArray(rows) || rows.length === 0) {
     return NextResponse.json({ error: 'Aucune ligne fournie' }, { status: 400 })
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
 async function processJob(
   jobId: string,
-  rows: Array<{ productName: string; keywords: string; category?: string; tone?: string; language?: string }>,
+  rows: Array<{ productName: string; keywords: string; category?: string; tone?: string; language?: string; price?: string; targetAudience?: string; mainArgument?: string; platform?: string }>,
   brandProfile: unknown,
   userId: string
 ) {
@@ -97,6 +97,10 @@ async function processJob(
         tone: row.tone || 'professionnel',
         language: (row.language as 'fr' | 'en' | 'es' | 'de' | 'it' | 'nl') || 'fr',
         brandProfile: brandProfile as never,
+        price: row.price,
+        targetAudience: row.targetAudience,
+        mainArgument: row.mainArgument,
+        platform: row.platform,
       })
 
       results.push({ productName: row.productName, ...sheet, error: null })

@@ -71,34 +71,44 @@ export default function SignupPage() {
 
     setLoading(true)
 
-    // Inscription via route admin (bypass confirmation email)
-    const res = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-      }),
-    })
+    try {
+      // Inscription via route admin (bypass confirmation email)
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error || 'Une erreur est survenue. Veuillez réessayer.')
+      if (!res.ok) {
+        setError(data.error || 'Une erreur est survenue. Veuillez réessayer.')
+        setLoading(false)
+        return
+      }
+
+      // Connexion automatique après inscription
+      try {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) {
+          setError(translateError(signInError.message))
+          setLoading(false)
+        } else {
+          router.push('/dashboard')
+          router.refresh()
+        }
+      } catch {
+        setError('Erreur de connexion. Veuillez vous connecter manuellement.')
+        setLoading(false)
+      }
+    } catch {
+      setError('Erreur de connexion. Vérifiez votre connexion internet.')
       setLoading(false)
-      return
-    }
-
-    // Connexion automatique après inscription
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-    if (signInError) {
-      setError(translateError(signInError.message))
-      setLoading(false)
-    } else {
-      router.push('/dashboard')
-      router.refresh()
     }
   }
 

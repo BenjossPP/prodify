@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { PLANS } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
+import { sendPurchaseConfirmationEmail } from '@/lib/email'
 
 // Client admin sans session — utilisé uniquement pour les webhooks
 function createAdminClient() {
@@ -55,15 +56,33 @@ export async function POST(request: NextRequest) {
           .from('profiles')
           .update({
             plan,
-            generations_used: 0,
             generations_limit: generations,
-            generations_reset_at: new Date().toISOString(),
             last_stripe_session_id: sessionId,
           })
           .eq('id', uid)
 
         if (error) console.error('Supabase update error:', error)
-        else console.log('Plan mis à jour avec succès:', plan, 'pour', uid, '— quota:', generations)
+        else {
+          console.log('Plan mis à jour avec succès:', plan, 'pour', uid, '— quota:', generations)
+
+          // Récupérer les infos de l'utilisateur pour l'email de confirmation
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('id', uid)
+            .single()
+
+          const { data: authUser } = await supabase.auth.admin.getUserById(uid)
+
+          if (authUser?.user?.email) {
+            sendPurchaseConfirmationEmail(
+              authUser.user.email,
+              profile?.first_name || 'là',
+              plan,
+              generations
+            )
+          }
+        }
       } else {
         console.warn('uid ou plan manquant / invalide dans les metadata:', session.metadata)
       }

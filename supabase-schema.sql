@@ -6,7 +6,6 @@ create table if not exists public.profiles (
   plan text not null default 'free' check (plan in ('free', 'starter', 'pro', 'business')),
   generations_used integer not null default 0,
   generations_limit integer not null default 3,
-  generations_reset_at timestamptz default now(),
   stripe_customer_id text,
   stripe_subscription_id text,
   created_at timestamptz default now()
@@ -19,6 +18,9 @@ alter table public.profiles add column if not exists last_name text;
 -- Add brand_profile and stripe idempotency column (idempotent)
 alter table public.profiles add column if not exists brand_profile jsonb;
 alter table public.profiles add column if not exists last_stripe_session_id text;
+
+-- Remove obsolete reset column (quota is permanent, never resets)
+alter table public.profiles drop column if exists generations_reset_at;
 
 -- Generations history
 create table if not exists public.generations (

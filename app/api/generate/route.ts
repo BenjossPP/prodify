@@ -5,7 +5,7 @@ import { generateProductSheet, generateProductSheetVariants } from '@/lib/openai
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { productName, keywords, category, tone, language, variants, imageBase64, imageMimeType } = body
+    const { productName, keywords, category, tone, language, variants, imageBase64, imageMimeType, price, targetAudience, mainArgument, platform } = body
 
     if (!productName || !keywords) {
       return NextResponse.json({ error: 'Nom du produit et mots-clés requis' }, { status: 400 })
@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
       brandProfile,
       imageBase64: imageBase64 || undefined,
       imageMimeType: imageMimeType || undefined,
+      price: price || undefined,
+      targetAudience: targetAudience || undefined,
+      mainArgument: mainArgument || undefined,
+      platform: platform || undefined,
     }
 
     // Generate product sheet(s)

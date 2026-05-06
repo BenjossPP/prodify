@@ -1,5 +1,6 @@
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: Request) {
   const { email, password, first_name, last_name } = await request.json()
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: 'Une erreur est survenue. Veuillez réessayer.' }, { status: 400 })
   }
+
+  // Envoyer l'email de bienvenue (non bloquant)
+  sendWelcomeEmail(email, first_name || 'là')
 
   return NextResponse.json({ user: data.user }, { status: 201 })
 }

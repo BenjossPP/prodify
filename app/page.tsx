@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useRef } from 'react'
+import { motion, AnimatePresence, useInView } from 'framer-motion'
 import {
   FadeIn, StaggerContainer, StaggerItem, ScaleIn,
   SlideIn, TextReveal, AnimatedBadge, GlowPulse, CountUp
@@ -96,6 +96,28 @@ const faqItems = [
   },
 ]
 
+// ─── Scan effect on feature cards ─────────────────────────────────────────────
+function ScanCard({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, margin: '-60px' })
+  return (
+    <div ref={ref} className="relative overflow-hidden h-full">
+      {children}
+      <AnimatePresence>
+        {inView && (
+          <motion.div
+            className="absolute inset-x-0 h-[2px] pointer-events-none"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.7), transparent)' }}
+            initial={{ top: '-2px', opacity: 0 }}
+            animate={{ top: '110%', opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 0.7, delay, ease: 'easeInOut' }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 function FaqAccordion() {
   const [open, setOpen] = useState<number | null>(null)
 
@@ -160,7 +182,7 @@ export default function HomePage() {
           <AnimatedBadge delay={0.1}>
             <div className="inline-flex items-center gap-2 mb-7 sm:mb-9 px-4 py-2 rounded-full border border-purple-500/25 shimmer">
               <Sparkles className="h-3.5 w-3.5 text-purple-300 shrink-0" />
-              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par l&apos;intelligence artificielle · 6 langues disponibles</span>
+              <span className="text-xs sm:text-sm text-purple-200/90 font-medium">Propulsé par GPT-4o · 6 langues</span>
             </div>
           </AnimatedBadge>
 
@@ -290,7 +312,7 @@ export default function HomePage() {
       </div>
 
       {/* ── Stats ────────────────────────────────────────────────────────────── */}
-      <section className="px-4 sm:px-6 py-16 sm:py-22 section-alt">
+      <section className="px-4 sm:px-6 py-16 sm:py-24 section-alt">
         <div className="max-w-4xl mx-auto">
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4" staggerDelay={0.15}>
             {[
@@ -333,7 +355,7 @@ export default function HomePage() {
                 <TextReveal text="Avant vs Après" />
               </h2>
               <p className="text-white/42 text-base sm:text-lg max-w-xl mx-auto">
-                Collez un nom de produit, obtenez une fiche complète et professionnelle.
+                Titre SEO, accroche, description, points clés, tags — en quelques secondes.
               </p>
             </div>
           </FadeIn>
@@ -347,18 +369,47 @@ export default function HomePage() {
                   <span className="text-sm text-white/38 font-medium">Avant ShopScribe</span>
                 </div>
                 <div className="space-y-3">
-                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium">Nom du produit</div>
+                  {/* Accroche manquante */}
+                  <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                    <div className="text-white/18 text-[10px] font-medium uppercase tracking-wide mb-1">Accroche</div>
+                    <div className="text-white/18 text-xs italic">— non renseignée —</div>
+                  </div>
+                  {/* Nom produit */}
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-2">Titre</div>
                   <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-white/55 text-sm font-mono">
                     Sac à dos imperméable 30L
                   </div>
-                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-5">Description</div>
+                  {/* Description */}
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-2">Description</div>
                   <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] text-white/28 text-sm italic leading-relaxed">
                     Sac à dos imperméable, grande capacité, idéal pour la randonnée.
                     Disponible en plusieurs couleurs.
                   </div>
+                  {/* USP manquant */}
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-2">Argument différenciateur</div>
+                  <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-white/18 text-xs italic">
+                    — non renseigné —
+                  </div>
+                  {/* Points clés vides */}
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-2">Points clés</div>
+                  <div className="space-y-1.5">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <span className="text-white/15 text-sm leading-none shrink-0">—</span>
+                        <div className="h-2 rounded-full bg-white/[0.05] w-full" />
+                      </div>
+                    ))}
+                  </div>
+                  {/* Tags vides */}
+                  <div className="text-white/32 text-xs uppercase tracking-wide font-medium mt-2">Tags SEO</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-5 w-16 rounded-full bg-white/[0.04] border border-white/[0.05]" />
+                    ))}
+                  </div>
                   <div className="pt-3 flex items-center gap-2 text-red-400/55 text-xs">
                     <span>✗</span>
-                    <span>Peu de mots-clés · Pas de SEO · Faible conversion</span>
+                    <span>Pas d'accroche · Pas d'USP · Aucun tag SEO · Faible conversion</span>
                   </div>
                 </div>
               </div>
@@ -375,32 +426,62 @@ export default function HomePage() {
                     <span className="text-sm text-purple-200/90 font-medium">Après ShopScribe</span>
                   </div>
                   <div className="space-y-3 relative">
-                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide">Titre SEO</div>
+                    {/* Accroche / Hook */}
+                    <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                      <div className="text-purple-300/70 text-[10px] font-medium uppercase tracking-wide mb-1">Accroche</div>
+                      <div className="text-purple-100/80 text-xs italic leading-relaxed">
+                        "Partez plus léger, allez plus loin — le sac qui ne vous lâche jamais."
+                      </div>
+                    </div>
+                    {/* Titre SEO */}
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-2">Titre SEO</div>
                     <div className="text-white text-sm font-semibold leading-snug">
                       Sac à Dos Imperméable 30L — Randonnée & Voyage | Ultra-Léger, Résistant
                     </div>
-                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-4">Description</div>
+                    {/* Description */}
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-3">Description</div>
                     <div className="text-white/65 text-sm leading-relaxed">
-                      Conçu pour les aventuriers exigeants, ce sac à dos imperméable 30L offre une capacité généreuse dans un format compact et ultra-léger...
+                      Conçu pour les aventuriers exigeants, ce sac à dos imperméable 30L offre une capacité généreuse dans un format compact et ultra-léger. Idéal pour la randonnée, le trekking ou les voyages urbains...
                     </div>
-                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-4">Points clés</div>
+                    {/* USP */}
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-3">Argument différenciateur</div>
+                    <div className="text-white/55 text-xs leading-relaxed">
+                      Le seul sac certifié IPX6 à moins de 900g sur le marché — sans compromis sur le confort.
+                    </div>
+                    {/* Points clés */}
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-3">Points clés</div>
                     <ul className="space-y-1.5">
-                      {['Imperméabilité certifiée IPX6', 'Sangle ergonomique lombaire', 'Matière recyclée et durable'].map((p, i) => (
+                      {[
+                        'Imperméabilité certifiée IPX6 — résiste à la pluie intense',
+                        'Sangle ergonomique lombaire pour longues randonnées',
+                        'Matière recyclée GRS, éco-responsable',
+                        'Poche laptop 15" rembourrée intégrée',
+                        'Poids plume : 890g pour 30L de capacité',
+                      ].map((p, i) => (
                         <motion.li
                           key={p}
-                          className="flex gap-2 text-white/60 text-xs items-center"
+                          className="flex gap-2 text-white/60 text-xs items-start"
                           initial={{ opacity: 0, x: -12 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.5 + i * 0.1, duration: 0.4 }}
+                          transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
                         >
-                          <span className="text-purple-400 text-base leading-none">✓</span> {p}
+                          <span className="text-purple-400 text-sm leading-none mt-px shrink-0">✦</span> {p}
                         </motion.li>
                       ))}
                     </ul>
+                    {/* Tags SEO */}
+                    <div className="text-white/38 text-xs font-medium uppercase tracking-wide mt-3">Tags SEO</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['sac à dos imperméable', 'randonnée 30L', 'ultra-léger trek', 'IPX6 outdoor', 'sac voyage durable'].map((tag) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] text-white/45 text-[10px]">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                     <div className="pt-3 flex items-center gap-2 text-green-400/65 text-xs">
                       <span>✓</span>
-                      <span>SEO optimisé · Conversion élevée · Prêt à publier</span>
+                      <span>SEO optimisé · 5 points clés · Tags & méta inclus · Prêt à publier</span>
                     </div>
                   </div>
                 </div>
@@ -430,27 +511,29 @@ export default function HomePage() {
           </FadeIn>
 
           <StaggerContainer className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4" staggerDelay={0.08}>
-            {features.map(({ icon: Icon, title, desc }) => (
+            {features.map(({ icon: Icon, title, desc }, idx) => (
               <StaggerItem key={title}>
-                <motion.div
-                  className="p-6 sm:p-7 rounded-2xl bg-white/[0.03] border border-white/[0.065] h-full group transition-all duration-300"
-                  whileHover={{
-                    y: -6,
-                    borderColor: 'rgba(139,92,246,0.35)',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-                    transition: { duration: 0.2 },
-                  }}
-                >
+                <ScanCard delay={idx * 0.08}>
                   <motion.div
-                    className="w-11 h-11 rounded-xl icon-glow border flex items-center justify-center mb-5"
-                    whileHover={{ scale: 1.15, rotate: 5 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    className="p-6 sm:p-7 rounded-2xl bg-white/[0.03] border border-white/[0.065] h-full group transition-all duration-300"
+                    whileHover={{
+                      y: -6,
+                      borderColor: 'rgba(139,92,246,0.35)',
+                      boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                      transition: { duration: 0.2 },
+                    }}
                   >
-                    <Icon className="h-5 w-5 text-purple-400" />
+                    <motion.div
+                      className="w-11 h-11 rounded-xl icon-glow border flex items-center justify-center mb-5"
+                      whileHover={{ scale: 1.15, rotate: 5 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    >
+                      <Icon className="h-5 w-5 text-purple-400" />
+                    </motion.div>
+                    <h3 className="font-semibold text-white mb-2.5 text-[15px]">{title}</h3>
+                    <p className="text-white/42 text-sm leading-relaxed">{desc}</p>
                   </motion.div>
-                  <h3 className="font-semibold text-white mb-2.5 text-[15px]">{title}</h3>
-                  <p className="text-white/42 text-sm leading-relaxed">{desc}</p>
-                </motion.div>
+                </ScanCard>
               </StaggerItem>
             ))}
           </StaggerContainer>
@@ -474,8 +557,8 @@ export default function HomePage() {
           </FadeIn>
 
           {/* Mobile : scroll horizontal snappable — Desktop : grille 3 colonnes */}
-          <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory sm:snap-none pb-4 sm:pb-0 scrollbar-none">
+          <div className="-mx-4 sm:mx-0">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory sm:snap-none pb-4 sm:pb-0 scrollbar-none px-4 sm:px-0 [&>*:last-child]:mr-4 sm:[&>*:last-child]:mr-0">
               {[
                 {
                   name: 'Julie M.',
@@ -522,7 +605,7 @@ export default function HomePage() {
               ].map(({ name, role, avatar, text, stars }) => (
                 <motion.div
                   key={name}
-                  className="snap-start shrink-0 w-[78vw] xs:w-[72vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] flex flex-col gap-4 transition-all duration-300"
+                  className="snap-start shrink-0 w-[82vw] sm:w-auto p-5 sm:p-6 rounded-2xl bg-white/[0.03] border border-white/[0.065] flex flex-col gap-4 transition-all duration-300"
                   whileHover={{ y: -4, borderColor: 'rgba(139,92,246,0.3)', transition: { duration: 0.2 } }}
                 >
                   <div className="flex gap-0.5">
@@ -742,19 +825,26 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.055] px-4 sm:px-6 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-              <Tag className="h-3 w-3 text-white" />
+      <footer className="border-t border-white/[0.055] px-4 sm:px-6 py-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
+                <Tag className="h-3 w-3 text-white" />
+              </div>
+              <span className="text-white/65 font-medium text-sm tracking-tight">ShopScribe</span>
             </div>
-            <span className="text-white/65 font-medium text-sm tracking-tight">ShopScribe</span>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-white/30">
+              <Link href="/pricing" className="hover:text-white/65 transition-colors">Tarifs</Link>
+              <Link href="/#features" className="hover:text-white/65 transition-colors">Fonctionnalités</Link>
+              <Link href="/login" className="hover:text-white/65 transition-colors">Connexion</Link>
+              <Link href="/signup" className="hover:text-white/65 transition-colors">S&apos;inscrire</Link>
+              <a href="mailto:support@shopscribe-ai.com" className="hover:text-white/65 transition-colors">Contact</a>
+            </div>
           </div>
-          <p className="text-white/22 text-xs">© {new Date().getFullYear()} ShopScribe. Tous droits réservés.</p>
-          <div className="flex gap-6 text-xs text-white/30">
-            <Link href="/pricing" className="hover:text-white/65 transition-colors">Tarifs</Link>
-            <Link href="/login" className="hover:text-white/65 transition-colors">Connexion</Link>
-            <Link href="/signup" className="hover:text-white/65 transition-colors">S&apos;inscrire</Link>
+          <div className="border-t border-white/[0.04] pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-white/20 text-xs">© {new Date().getFullYear()} ShopScribe. Tous droits réservés.</p>
+            <p className="text-white/15 text-xs">Généré par GPT-4o · Paiement sécurisé par Stripe</p>
           </div>
         </div>
       </footer>

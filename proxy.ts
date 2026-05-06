@@ -32,10 +32,11 @@ export async function proxy(request: NextRequest) {
     ]) as Awaited<ReturnType<typeof supabase.auth.getUser>>
     user = result.data.user
   } catch {
-    // On timeout or network error: allow public pages, block /dashboard and /account
+    // On timeout or network error: allow public pages, block protected routes
     if (
       request.nextUrl.pathname.startsWith('/dashboard') ||
-      request.nextUrl.pathname.startsWith('/account')
+      request.nextUrl.pathname.startsWith('/account') ||
+      request.nextUrl.pathname.startsWith('/admin')
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
@@ -44,15 +45,26 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Protect dashboard and account routes
+  // Protect dashboard, account and admin routes
   if (
     !user &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
-      request.nextUrl.pathname.startsWith('/account'))
+      request.nextUrl.pathname.startsWith('/account') ||
+      request.nextUrl.pathname.startsWith('/admin'))
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
+  }
+
+  // Admin route: only allow users with the configured admin email
+  if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || process.env.ADMIN_EMAIL
+    if (!adminEmail || user.email !== adminEmail) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   // Redirect logged-in users away from auth pages

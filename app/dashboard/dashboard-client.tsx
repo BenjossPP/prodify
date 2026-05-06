@@ -52,6 +52,10 @@ interface ProductSheet {
   bulletPoints: string[]
   metaDescription: string
   tags: string[]
+  hook?: string
+  uniqueSellingPoint?: string
+  targetAudienceInsight?: string
+  faqs?: { question: string; answer: string }[]
 }
 
 interface BulkRow {
@@ -60,6 +64,10 @@ interface BulkRow {
   category?: string
   tone?: string
   language?: string
+  price?: string
+  targetAudience?: string
+  mainArgument?: string
+  platform?: string
 }
 
 interface BulkResult extends ProductSheet {
@@ -647,6 +655,99 @@ function EditableProductSheetDisplay({ result, onResultChange, suffix, copied, o
   )
 }
 
+// ─── Product Sheet Extras (Hook / USP / Audience / FAQs) ─────────────────────
+
+function ProductSheetExtras({ result, onCopy, copied }: { result: ProductSheet; onCopy?: (text: string, id: string) => void; copied?: string | null }) {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const hasExtras = result.hook || result.uniqueSellingPoint || result.targetAudienceInsight || (result.faqs && result.faqs.length > 0)
+  if (!hasExtras) return null
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      {/* Hook */}
+      {result.hook && (
+        <div className="rounded-2xl bg-gradient-to-r from-purple-600/10 to-violet-600/8 border border-purple-500/25 px-5 py-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-xs font-semibold text-purple-400/80 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3" /> Phrase d&apos;accroche
+            </p>
+            {onCopy && (
+              <button
+                type="button"
+                onClick={() => onCopy(result.hook!, 'hook')}
+                className="p-1.5 rounded-lg text-purple-400/40 hover:text-purple-300/80 transition-colors"
+                title="Copier la phrase d'accroche"
+              >
+                {copied === 'hook' ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-white/90 font-medium leading-relaxed italic">&ldquo;{result.hook}&rdquo;</p>
+        </div>
+      )}
+
+      {/* USP + Audience side by side */}
+      {(result.uniqueSellingPoint || result.targetAudienceInsight) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {result.uniqueSellingPoint && (
+            <div className="rounded-2xl bg-white/[0.035] border border-white/[0.07] px-4 py-3.5">
+              <p className="text-xs font-semibold text-amber-400/80 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <Star className="h-3 w-3" /> Argument unique (USP)
+              </p>
+              <p className="text-xs text-white/70 leading-relaxed">{result.uniqueSellingPoint}</p>
+            </div>
+          )}
+          {result.targetAudienceInsight && (
+            <div className="rounded-2xl bg-white/[0.035] border border-white/[0.07] px-4 py-3.5">
+              <p className="text-xs font-semibold text-sky-400/80 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <Eye className="h-3 w-3" /> Public cible
+              </p>
+              <p className="text-xs text-white/70 leading-relaxed">{result.targetAudienceInsight}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FAQs */}
+      {result.faqs && result.faqs.length > 0 && (
+        <div className="rounded-2xl bg-white/[0.035] border border-white/[0.07] overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/[0.055]">
+            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider flex items-center gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5 text-white/40" /> FAQ Produit
+            </p>
+          </div>
+          <div className="divide-y divide-white/[0.05]">
+            {result.faqs.map((faq, i) => (
+              <div key={i}>
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.025] transition-colors"
+                >
+                  <span className="text-xs font-medium text-white/80 pr-3">{faq.question}</span>
+                  {openFaq === i ? <ChevronUp className="h-3.5 w-3.5 text-white/30 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 text-white/30 shrink-0" />}
+                </button>
+                <AnimatePresence>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-4 pb-3 text-xs text-white/50 leading-relaxed">{faq.answer}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
 // ─── Onboarding Modal ─────────────────────────────────────────────────────────
 
 function OnboardingModal({ onClose }: { onClose: () => void }) {
@@ -952,6 +1053,25 @@ export default function DashboardClient({
     if (typeof window === 'undefined') return 'fr'
     try { return JSON.parse(localStorage.getItem('shopscribe_form_draft') || '{}').language || 'fr' } catch { return 'fr' }
   })
+  // Advanced personalisation fields
+  const [price, setPrice] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    try { return JSON.parse(localStorage.getItem('shopscribe_form_draft') || '{}').price || '' } catch { return '' }
+  })
+  const [targetAudience, setTargetAudience] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    try { return JSON.parse(localStorage.getItem('shopscribe_form_draft') || '{}').targetAudience || '' } catch { return '' }
+  })
+  const [mainArgument, setMainArgument] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    try { return JSON.parse(localStorage.getItem('shopscribe_form_draft') || '{}').mainArgument || '' } catch { return '' }
+  })
+  const [platform, setPlatform] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    try { return JSON.parse(localStorage.getItem('shopscribe_form_draft') || '{}').platform || '' } catch { return '' }
+  })
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
   const [withVariants, setWithVariants] = useState(false)
   const [abSideBySide, setAbSideBySide] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -1021,8 +1141,8 @@ export default function DashboardClient({
   // Persist form draft on any change
   useEffect(() => {
     if (typeof window === 'undefined') return
-    localStorage.setItem('shopscribe_form_draft', JSON.stringify({ productName, keywords, category, tone, language }))
-  }, [productName, keywords, category, tone, language])
+    localStorage.setItem('shopscribe_form_draft', JSON.stringify({ productName, keywords, category, tone, language, price, targetAudience, mainArgument, platform }))
+  }, [productName, keywords, category, tone, language, price, targetAudience, mainArgument, platform])
 
   async function loadMoreHistory() {
     setHistoryLoading(true)
@@ -1180,10 +1300,20 @@ export default function DashboardClient({
     })
   }
 
-  function copyAll(sheet: ProductSheet) {    copy(
-      `TITRE:\n${sheet.title}\n\nDESCRIPTION:\n${sheet.description}\n\nPOINTS CLÉS:\n${sheet.bulletPoints.map(b => `• ${b}`).join('\n')}\n\nMETA DESCRIPTION:\n${sheet.metaDescription}\n\nTAGS:\n${sheet.tags.join(', ')}`,
-      'all'
-    )
+  function copyAll(sheet: ProductSheet) {
+    const parts: string[] = []
+    if (sheet.hook) parts.push(`ACCROCHE:\n${sheet.hook}`)
+    parts.push(`TITRE:\n${sheet.title}`)
+    parts.push(`DESCRIPTION:\n${sheet.description}`)
+    parts.push(`POINTS CLÉS:\n${sheet.bulletPoints.map(b => `• ${b}`).join('\n')}`)
+    parts.push(`META DESCRIPTION:\n${sheet.metaDescription}`)
+    parts.push(`TAGS:\n${sheet.tags.join(', ')}`)
+    if (sheet.uniqueSellingPoint) parts.push(`ARGUMENT UNIQUE (USP):\n${sheet.uniqueSellingPoint}`)
+    if (sheet.targetAudienceInsight) parts.push(`PUBLIC CIBLE:\n${sheet.targetAudienceInsight}`)
+    if (sheet.faqs && sheet.faqs.length > 0) {
+      parts.push(`FAQ:\n${sheet.faqs.map((f, i) => `Q${i + 1}: ${f.question}\nR: ${f.answer}`).join('\n\n')}`)
+    }
+    copy(parts.join('\n\n'), 'all')
   }
 
   function copyForEtsy(sheet: ProductSheet) {
@@ -1263,7 +1393,7 @@ export default function DashboardClient({
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productName, keywords, category, tone, language, variants: withVariants, imageBase64, imageMimeType }),
+        body: JSON.stringify({ productName, keywords, category, tone, language, variants: withVariants, imageBase64, imageMimeType, price, targetAudience, mainArgument, platform }),
       })
       const data = await res.json()
 
@@ -1360,6 +1490,10 @@ export default function DashboardClient({
         category: row['category'] || row['categorie'] || row['catégorie'] || 'Général',
         tone: row['tone'] || row['ton'] || 'professionnel',
         language: row['language'] || row['langue'] || 'fr',
+        price: row['price'] || row['prix'] || '',
+        targetAudience: row['target_audience'] || row['public_cible'] || '',
+        mainArgument: row['main_argument'] || row['argument_principal'] || '',
+        platform: row['platform'] || row['plateforme'] || '',
       }))
       .filter(r => r.productName && r.keywords)
   }
@@ -1429,18 +1563,22 @@ export default function DashboardClient({
   }
 
   function downloadBulkCSV() {
-    const header = 'product_name,title,meta_description,description,bullet_points,tags,error'
+    const header = 'product_name,title,hook,meta_description,description,bullet_points,tags,unique_selling_point,target_audience_insight,faqs,error'
     const rows = bulkResults.map(r => [
       `"${r.productName}"`,
-      `"${r.title || ''}"`,
-      `"${r.metaDescription || ''}"`,
+      `"${(r.title || '').replace(/"/g, '""')}"`,
+      `"${(r.hook || '').replace(/"/g, '""')}"`,
+      `"${(r.metaDescription || '').replace(/"/g, '""')}"`,
       `"${(r.description || '').replace(/"/g, '""')}"`,
-      `"${(r.bulletPoints || []).join(' | ')}"`,
-      `"${(r.tags || []).join(', ')}"`,
+      `"${(r.bulletPoints || []).join(' | ').replace(/"/g, '""')}"`,
+      `"${(r.tags || []).join(', ').replace(/"/g, '""')}"`,
+      `"${(r.uniqueSellingPoint || '').replace(/"/g, '""')}"`,
+      `"${(r.targetAudienceInsight || '').replace(/"/g, '""')}"`,
+      `"${(r.faqs || []).map((f: { question: string; answer: string }) => `Q: ${f.question} | R: ${f.answer}`).join(' // ').replace(/"/g, '""')}"`,
       `"${r.error || ''}"`,
     ].join(','))
     const csv = [header, ...rows].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -1450,8 +1588,14 @@ export default function DashboardClient({
   }
 
   function downloadTemplate() {
-    const csv = 'product_name,keywords,category,tone,language\n"Sac à dos 30L","randonnée étanche léger",Sport,professionnel,fr\n"Robe d\'été","fleurs légère coton",Mode,casual,fr'
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const header = 'product_name,keywords,category,tone,language,price,target_audience,main_argument,platform'
+    const rows = [
+      '"Sac à dos 30L","randonnée étanche léger",Sport,professionnel,fr,"89€","randonneurs 25-45 ans","légèreté et étanchéité","Shopify"',
+      '"Robe d\'été","fleurs légère coton",Mode,casual,fr,"49€","femmes 20-35 ans","confort toute la journée","Etsy"',
+      '"Montre connectée","sport GPS fréquence cardiaque",Électronique,technique,fr,,,,'
+    ]
+    const csv = [header, ...rows].join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -1821,6 +1965,77 @@ export default function DashboardClient({
                           </motion.div>
                         )}
 
+                        {/* Advanced personalisation */}
+                        <div className="border-t border-white/[0.05] pt-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowAdvanced(v => !v)}
+                            className="flex items-center justify-between w-full text-xs text-white/40 hover:text-white/65 transition-colors py-1"
+                          >
+                            <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider">
+                              <Sparkles className="h-3 w-3 text-purple-400/70" />
+                              Personnalisation avancée
+                              {(price || targetAudience || mainArgument || platform) && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-purple-600/20 text-purple-300 text-[10px] font-bold">
+                                  {[price, targetAudience, mainArgument, platform].filter(Boolean).length}
+                                </span>
+                              )}
+                            </span>
+                            {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                          </button>
+                          <AnimatePresence>
+                            {showAdvanced && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-3 space-y-3">
+                                  <div className="grid grid-cols-2 gap-2.5">
+                                    <div className="space-y-1.5">
+                                      <Label className="text-white/45 text-xs font-medium">Prix du produit</Label>
+                                      <Input
+                                        placeholder="ex: 49,90 €"
+                                        value={price}
+                                        onChange={e => setPrice(e.target.value)}
+                                        className="bg-white/[0.04] border-white/[0.09] text-white placeholder:text-white/20 rounded-xl focus:ring-0 h-10 text-sm focus:border-purple-500/50"
+                                      />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                      <Label className="text-white/45 text-xs font-medium">Plateforme cible</Label>
+                                      <Input
+                                        placeholder="ex: Shopify, Etsy, Amazon"
+                                        value={platform}
+                                        onChange={e => setPlatform(e.target.value)}
+                                        className="bg-white/[0.04] border-white/[0.09] text-white placeholder:text-white/20 rounded-xl focus:ring-0 h-10 text-sm focus:border-purple-500/50"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <Label className="text-white/45 text-xs font-medium">Public cible</Label>
+                                    <Input
+                                      placeholder="ex: femmes 25-40 ans, sportifs, parents…"
+                                      value={targetAudience}
+                                      onChange={e => setTargetAudience(e.target.value)}
+                                      className="bg-white/[0.04] border-white/[0.09] text-white placeholder:text-white/20 rounded-xl focus:ring-0 h-10 text-sm focus:border-purple-500/50"
+                                    />
+                                  </div>
+                                  <div className="space-y-1.5">
+                                    <Label className="text-white/45 text-xs font-medium">Argument principal</Label>
+                                    <Input
+                                      placeholder="ex: gain de temps, économies, confort…"
+                                      value={mainArgument}
+                                      onChange={e => setMainArgument(e.target.value)}
+                                      className="bg-white/[0.04] border-white/[0.09] text-white placeholder:text-white/20 rounded-xl focus:ring-0 h-10 text-sm focus:border-purple-500/50"
+                                    />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
                         {/* Generate button */}
                         <motion.button
                           type="submit"
@@ -2020,7 +2235,7 @@ export default function DashboardClient({
                                       <ChevronRight className="h-4 w-4" />
                                     </button>
                                   </div>
-                                  <EditableProductSheetDisplay
+                                   <EditableProductSheetDisplay
                                     result={displayVariants[activeVariant]}
                                     onResultChange={updated => {
                                       const newVariants = [...displayVariants]
@@ -2031,8 +2246,9 @@ export default function DashboardClient({
                                     suffix={`v${activeVariant}`}
                                     copied={copied}
                                     onCopy={copy}
-                                  />
-                                  <SEOScorePanel result={displayVariants[activeVariant]} keywords={keywords} />
+                                   />
+                                   <ProductSheetExtras result={displayVariants[activeVariant]} onCopy={copy} copied={copied} />
+                                   <SEOScorePanel result={displayVariants[activeVariant]} keywords={keywords} />
                                 </>
                               )}
                             </>
@@ -2101,6 +2317,7 @@ export default function DashboardClient({
                                 copied={copied}
                                 onCopy={copy}
                               />
+                              <ProductSheetExtras result={displayResult} onCopy={copy} copied={copied} />
                               <SEOScorePanel result={displayResult} keywords={keywords} />
                             </>
                           )}
@@ -2720,6 +2937,9 @@ function HistoryItem({ gen, index, onCopyAll, copied, onCopy, onToggleFavorite }
                   </div>
                 </div>
               )}
+
+              {/* Hook / USP / Audience / FAQs */}
+              <ProductSheetExtras result={gen.result} onCopy={onCopy} copied={copied} />
             </div>
           </motion.div>
         )}
