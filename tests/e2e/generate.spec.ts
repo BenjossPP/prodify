@@ -2,11 +2,9 @@ import { test, expect } from '@playwright/test'
 
 /**
  * Test E2E — Génération de fiche produit
- * Vérifie le formulaire de génération avec un mock de l'API /api/generate.
  */
 test.describe('Generate flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock the generate API to avoid real OpenAI calls
     await page.route('/api/generate', async route => {
       await route.fulfill({
         status: 200,
@@ -14,7 +12,8 @@ test.describe('Generate flow', () => {
         body: JSON.stringify({
           data: {
             title: 'Sac à dos imperméable 30L — Randonnée & Voyage',
-            description: 'Un sac à dos conçu pour les aventuriers exigeants...',
+            hook: 'Le compagnon idéal pour vos aventures.',
+            description: 'Un sac à dos conçu pour les aventuriers exigeants. Tissu renforcé, bretelles ergonomiques et multiples compartiments pour une organisation optimale.',
             bulletPoints: [
               'Imperméable grâce au tissu renforcé',
               'Capacité 30L idéale pour un week-end',
@@ -24,29 +23,65 @@ test.describe('Generate flow', () => {
             ],
             metaDescription: 'Sac à dos imperméable 30L pour randonnée et voyage. Léger, ergonomique, résistant.',
             tags: ['randonnée', 'sac à dos', 'imperméable', 'voyage', 'outdoor'],
+            uniqueSellingPoint: 'Le seul sac conçu pour durer 10 ans.',
+            targetAudienceInsight: 'Randonneurs 25-45 ans cherchant fiabilité.',
+            faqs: [
+              { question: 'Est-il vraiment imperméable ?', answer: 'Oui, certifié IPX4.' },
+            ],
           },
         }),
       })
     })
-
-    // Mock quota check (auth)
     await page.route('/api/brand-profile', async route => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: null }) })
     })
   })
 
-  test('le formulaire de génération est présent sur la page dashboard', async ({ page }) => {
-    // Sans authentification, le middleware redirige vers login
+  test('redirige /dashboard vers /login sans session', async ({ page }) => {
     await page.goto('/dashboard')
-    // Si redirigé, on vérifie qu'on est sur login
-    await expect(page).toHaveURL(/\/login|\/dashboard/)
+    await expect(page).toHaveURL(/\/login/)
   })
 
-  test('le formulaire valide les champs requis avant soumission', async ({ page }) => {
-    // Ce test simule la validation côté client
-    // On teste directement la page login pour la redirection
+  test('la page de login affiche bien les deux champs requis', async ({ page }) => {
     await page.goto('/login')
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
+  })
+
+  test('la page pricing affiche les 3 plans payants', async ({ page }) => {
+    await page.goto('/pricing')
+    await expect(page.locator('text=Starter').first()).toBeVisible()
+    await expect(page.locator('text=Pro').first()).toBeVisible()
+    await expect(page.locator('text=Business').first()).toBeVisible()
+  })
+
+  test("l'API /api/generate retourne une fiche valide (mock)", async ({ page }) => {
+    const response = await page.request.post('/api/generate', {
+      data: {
+        productName: 'Sac à dos',
+        keywords: 'imperméable, randonnée',
+        category: 'Sport',
+        tone: 'professionnel',
+        language: 'fr',
+      },
+    })
+    // Mock configuré — doit retourner 200
+    expect(response.status()).toBe(200)
+    const body = await response.json()
+    expect(body.data).toBeDefined()
+    expect(body.data.title).toBeTruthy()
+    expect(Array.isArray(body.data.bulletPoints)).toBe(true)
+    expect(body.data.bulletPoints.length).toBeGreaterThan(0)
+    expect(body.data.tags.length).toBeGreaterThan(0)
+  })
+
+  test("l'API /api/generate rejette une requête sans productName", async ({ page }) => {
+    // Retire le mock pour ce test spécifique afin de tester la vraie validation
+    await page.unrouteAll()
+    const response = await page.request.post('/api/generate', {
+      data: { keywords: 'test', category: 'Général', tone: 'professionnel', language: 'fr' },
+    })
+    // Doit retourner 400 ou 401 (pas de session)
+    expect([400, 401]).toContain(response.status())
   })
 })

@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   // Envoyer l'email de bienvenue
   try {
-    await sendWelcomeEmail(email, first_name || 'là')
+    await sendWelcomeEmail(email, first_name || 'vous')
   } catch (emailErr) {
     console.error('[signup] Failed to send welcome email:', emailErr)
   }

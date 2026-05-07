@@ -846,7 +846,7 @@ export default function HomePage() {
               <Link href="/cgv" className="hover:text-white/45 transition-colors">CGV</Link>
               <Link href="/confidentialite" className="hover:text-white/45 transition-colors">Confidentialité</Link>
             </div>
-            <p className="text-white/15 text-xs">Généré par GPT-4o · Paiement sécurisé par Stripe</p>
+            <p className="text-white/15 text-xs">Paiement sécurisé par Stripe</p>
           </div>
         </div>
       </footer>

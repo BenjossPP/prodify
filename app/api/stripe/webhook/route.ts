@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
           .update({
             plan,
             generations_limit: generations,
+            generations_used: 0,
             last_stripe_session_id: sessionId,
           })
           .eq('id', uid)
@@ -75,9 +76,9 @@ export async function POST(request: NextRequest) {
           const { data: authUser } = await supabase.auth.admin.getUserById(uid)
 
           if (authUser?.user?.email) {
-            sendPurchaseConfirmationEmail(
+            await sendPurchaseConfirmationEmail(
               authUser.user.email,
-              profile?.first_name || 'là',
+              profile?.first_name || 'vous',
               plan,
               generations
             )

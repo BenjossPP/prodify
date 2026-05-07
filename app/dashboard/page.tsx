@@ -10,7 +10,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, generations_used, brand_profile')
+    .select('plan, generations_used, generations_limit, brand_profile')
     .eq('id', user.id)
     .single()
 
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       user={{ email: user.email! }}
-      profile={profile || { plan: 'free', generations_used: 0, brand_profile: null }}
+      profile={profile || { plan: 'free', generations_used: 0, generations_limit: 3, brand_profile: null }}
       history={history || []}
     />
   )

@@ -4,12 +4,12 @@ import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Crown, Sparkles, ArrowRight, Check, Tag } from 'lucide-react'
+import { Crown, Sparkles, ArrowRight, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { PLAN_GENERATIONS, PLAN_LABELS } from '@/lib/plans'
 
-const PLAN_LABELS: Record<string, string> = { starter: 'Starter', pro: 'Pro', business: 'Business' }
-const PLAN_QUOTAS: Record<string, number> = { starter: 25, pro: 100, business: 500 }
 const PLAN_COLORS: Record<string, string> = {
   starter: 'from-blue-500 to-blue-700',
   pro: 'from-purple-500 to-purple-700',
@@ -19,11 +19,53 @@ const PLAN_COLORS: Record<string, string> = {
 function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const plan = searchParams.get('plan') || 'pro'
+  const planFromUrl = searchParams.get('plan') || 'pro'
+
+  const [verified, setVerified] = useState<boolean | null>(null)
+  const [plan, setPlan] = useState(planFromUrl)
   const [tick, setTick] = useState(0)
 
+  // Vérification en Supabase que le plan correspond bien
   useEffect(() => {
-    const target = PLAN_QUOTAS[plan] || 100
+    async function verify() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.replace('/login')
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile || profile.plan === 'free') {
+        // Pas encore mis à jour (webhook peut prendre quelques secondes) — on attend 3s et on réessaie
+        await new Promise(r => setTimeout(r, 3000))
+        const { data: retryProfile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single()
+        if (!retryProfile || retryProfile.plan === 'free') {
+          router.replace('/pricing')
+          return
+        }
+        setPlan(retryProfile.plan)
+        setVerified(true)
+      } else {
+        setPlan(profile.plan)
+        setVerified(true)
+      }
+    }
+    verify()
+  }, [router])
+
+  // Compteur animé
+  useEffect(() => {
+    if (!verified) return
+    const target = PLAN_GENERATIONS[plan] || 100
     const step = Math.ceil(target / 40)
     const interval = setInterval(() => {
       setTick(prev => {
@@ -35,7 +77,16 @@ function SuccessContent() {
       })
     }, 30)
     return () => clearInterval(interval)
-  }, [plan])
+  }, [plan, verified])
+
+  if (verified === null) {
+    return (
+      <div className="min-h-screen bg-[#080810] text-white flex flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 text-purple-400 animate-spin mb-4" />
+        <p className="text-white/40 text-sm">Vérification du paiement…</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#080810] text-white flex flex-col items-center justify-center px-4">

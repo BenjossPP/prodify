@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
+import { VALID_PLANS } from '@/lib/plans'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { priceId, plan } = await request.json()
+
+    if (!plan || !VALID_PLANS.includes(plan) || plan === 'free') {
+      return NextResponse.json({ error: 'Plan invalide' }, { status: 400 })
+    }
+    if (!priceId || typeof priceId !== 'string') {
+      return NextResponse.json({ error: 'priceId invalide' }, { status: 400 })
+    }
 
     const { data: profile } = await supabase
       .from('profiles')

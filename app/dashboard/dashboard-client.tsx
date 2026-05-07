@@ -1,5 +1,6 @@
 'use client'
 
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx'
 import Papa from 'papaparse'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -27,6 +28,7 @@ import Link from 'next/link'
 interface Profile {
   plan: string
   generations_used: number
+  generations_limit: number
   brand_profile: BrandProfile | null
   is_new?: boolean
 }
@@ -86,7 +88,6 @@ interface SavedTemplate {
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const PLAN_LIMITS: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
 const PLAN_LABELS: Record<string, string> = { free: 'Gratuit', starter: 'Starter', pro: 'Pro', business: 'Business' }
 
 const CATEGORIES = ['Général', 'Mode', 'Électronique', 'Sport', 'Maison', 'Beauté', 'Alimentation', 'Bijoux']
@@ -1222,7 +1223,7 @@ export default function DashboardClient({
     return () => window.removeEventListener('click', onClickOutside)
   }, [showExportMenu])
 
-  const limit = PLAN_LIMITS[profile.plan]
+  const limit = profile.generations_limit ?? 3
   const used = profile.generations_used
   const remaining = limit === -1 ? '∞' : Math.max(0, limit - used)
   const pct = limit === -1 ? 0 : Math.min(100, (used / limit) * 100)
@@ -1336,8 +1337,7 @@ export default function DashboardClient({
     )
   }
 
-  function exportSheetTxt(sheet: ProductSheet, name: string) {
-    posthog.capture('export_txt', { source: 'generate' })
+  function exportSheetTxt(sheet: ProductSheet, name: string) {    posthog.capture('export_txt', { source: 'generate' })
     const content = [
       `PRODUIT : ${name}`,
       `DATE : ${new Date().toLocaleDateString('fr-FR')}`,
@@ -1362,6 +1362,76 @@ export default function DashboardClient({
     const a = document.createElement('a')
     a.href = url
     a.download = `shopscribe-${name.toLowerCase().replace(/\s+/g, '-').slice(0, 40)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function exportSheetDocx(sheet: ProductSheet, name: string) {
+    posthog.capture('export_docx', { source: 'generate' })
+    const slug = name.toLowerCase().replace(/\s+/g, '-').slice(0, 40)
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({ text: `ShopScribe — ${name}`, heading: HeadingLevel.TITLE }),
+          new Paragraph({ text: new Date().toLocaleDateString('fr-FR'), style: 'Normal' }),
+          new Paragraph({ text: '' }),
+
+          new Paragraph({ text: 'Titre SEO', heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ children: [new TextRun({ text: sheet.title, bold: true })] }),
+          new Paragraph({ text: '' }),
+
+          new Paragraph({ text: 'Meta Description', heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ text: sheet.metaDescription }),
+          new Paragraph({ text: '' }),
+
+          new Paragraph({ text: 'Description', heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ text: sheet.description }),
+          new Paragraph({ text: '' }),
+
+          new Paragraph({ text: 'Points Clés', heading: HeadingLevel.HEADING_1 }),
+          ...(sheet.bulletPoints || []).map(b =>
+            new Paragraph({ text: `• ${b}`, alignment: AlignmentType.LEFT })
+          ),
+          new Paragraph({ text: '' }),
+
+          ...(sheet.hook ? [
+            new Paragraph({ text: 'Accroche', heading: HeadingLevel.HEADING_1 }),
+            new Paragraph({ text: sheet.hook }),
+            new Paragraph({ text: '' }),
+          ] : []),
+
+          ...(sheet.uniqueSellingPoint ? [
+            new Paragraph({ text: 'Argument Unique', heading: HeadingLevel.HEADING_1 }),
+            new Paragraph({ text: sheet.uniqueSellingPoint }),
+            new Paragraph({ text: '' }),
+          ] : []),
+
+          ...(sheet.targetAudienceInsight ? [
+            new Paragraph({ text: 'Audience Cible', heading: HeadingLevel.HEADING_1 }),
+            new Paragraph({ text: sheet.targetAudienceInsight }),
+            new Paragraph({ text: '' }),
+          ] : []),
+
+          new Paragraph({ text: 'Tags SEO', heading: HeadingLevel.HEADING_1 }),
+          new Paragraph({ text: (sheet.tags || []).join(', ') }),
+
+          ...(sheet.faqs && sheet.faqs.length > 0 ? [
+            new Paragraph({ text: '' }),
+            new Paragraph({ text: 'FAQ', heading: HeadingLevel.HEADING_1 }),
+            ...sheet.faqs.flatMap(faq => [
+              new Paragraph({ children: [new TextRun({ text: `Q : ${faq.question}`, bold: true })] }),
+              new Paragraph({ text: `R : ${faq.answer}` }),
+              new Paragraph({ text: '' }),
+            ]),
+          ] : []),
+        ],
+      }],
+    })
+    const blob = await Packer.toBlob(doc)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `shopscribe-${slug}.docx`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -2280,6 +2350,7 @@ export default function DashboardClient({
                                             { label: 'Format Etsy', sub: 'Titre 140 car. · 13 tags', icon: <span className="text-base leading-none shrink-0">🛍️</span>, onClick: () => { copyForEtsy(displayResult!); setShowExportMenu(false) } },
                                             { label: 'Format Amazon', sub: 'Titre 200 car. · 5 bullets', icon: <span className="text-base leading-none shrink-0">📦</span>, onClick: () => { copyForAmazon(displayResult!); setShowExportMenu(false) } },
                                             { label: 'Exporter .txt', sub: 'Fichier texte formaté', icon: <Download className="h-3.5 w-3.5 text-white/30 shrink-0" />, onClick: () => { exportSheetTxt(displayResult!, productName); setShowExportMenu(false) } },
+                                            { label: 'Exporter .docx', sub: 'Document Word formaté', icon: <Download className="h-3.5 w-3.5 text-white/30 shrink-0" />, onClick: () => { exportSheetDocx(displayResult!, productName); setShowExportMenu(false) } },
                                           ].map((item, i) => (
                                             <div key={item.label}>
                                               <button
@@ -2781,6 +2852,50 @@ function exportTxt(gen: Generation) {
   URL.revokeObjectURL(url)
 }
 
+async function exportDocx(gen: Generation) {
+  posthog.capture('export_docx', { source: 'history' })
+  const name = gen.product_name
+  const sheet = gen.result
+  const slug = name.toLowerCase().replace(/\s+/g, '-').slice(0, 40)
+  const doc = new Document({
+    sections: [{
+      children: [
+        new Paragraph({ text: `ShopScribe — ${name}`, heading: HeadingLevel.TITLE }),
+        new Paragraph({ text: new Date(gen.created_at).toLocaleDateString('fr-FR') }),
+        new Paragraph({ text: '' }),
+
+        new Paragraph({ text: 'Titre SEO', heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ children: [new TextRun({ text: sheet.title, bold: true })] }),
+        new Paragraph({ text: '' }),
+
+        new Paragraph({ text: 'Meta Description', heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ text: sheet.metaDescription }),
+        new Paragraph({ text: '' }),
+
+        new Paragraph({ text: 'Description', heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ text: sheet.description }),
+        new Paragraph({ text: '' }),
+
+        new Paragraph({ text: 'Points Clés', heading: HeadingLevel.HEADING_1 }),
+        ...(sheet.bulletPoints || []).map(b =>
+          new Paragraph({ text: `• ${b}`, alignment: AlignmentType.LEFT })
+        ),
+        new Paragraph({ text: '' }),
+
+        new Paragraph({ text: 'Tags SEO', heading: HeadingLevel.HEADING_1 }),
+        new Paragraph({ text: (sheet.tags || []).join(', ') }),
+      ],
+    }],
+  })
+  const blob = await Packer.toBlob(doc)
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `shopscribe-${slug}.docx`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 function HistoryItem({ gen, index, onCopyAll, copied, onCopy, onToggleFavorite }: {
   gen: Generation
   index: number
@@ -2831,6 +2946,13 @@ function HistoryItem({ gen, index, onCopyAll, copied, onCopy, onToggleFavorite }
             title="Exporter en .txt"
           >
             <Download className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); exportDocx(gen) }}
+            className="p-1.5 rounded-lg text-white/20 hover:text-white/60 transition-colors"
+            title="Exporter en .docx"
+          >
+            <span className="text-[10px] font-bold leading-none">W</span>
           </button>
         </div>
       </div>
