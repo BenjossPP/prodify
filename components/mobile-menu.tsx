@@ -122,7 +122,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
               {/* Header */}
               <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <img src="/Logo SS.png" alt="ShopScribe" style={{ height: 32, width: 'auto' }} />
+                  <img src="/logo shopscribe.png" alt="ShopScribe" style={{ height: 24, width: 'auto' }} />
                 </div>
                 <motion.button
                   onClick={() => setOpen(false)}
@@ -151,7 +151,7 @@ export function MobileMenu({ isLoggedIn = false }: MobileMenuProps) {
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)' }}
                     >
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 32, height: 24, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Icon style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />
                       </div>
                       {label}

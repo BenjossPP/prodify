@@ -829,7 +829,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-2.5 ">
-              <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto opacity-65" />
+              <img src="/logo shopscribe.png" alt="ShopScribe" className="h-6 w-auto opacity-65" />
             </div>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-white/30">
               <Link href="/pricing" className="hover:text-white/65 transition-colors">Tarifs</Link>

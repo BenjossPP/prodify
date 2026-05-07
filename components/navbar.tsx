@@ -85,7 +85,7 @@ export function Navbar() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group">
-              <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
+              <img src="/logo shopscribe.png" alt="ShopScribe" className="h-6 w-auto" />
             </Link>
 
             {/* Links desktop */}
@@ -193,7 +193,7 @@ export function Navbar() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img src="/Logo SS.png" alt="ShopScribe" style={{ height: 32, width: 'auto' }} />
+                <img src="/logo shopscribe.png" alt="ShopScribe" style={{ height: 24, width: 'auto' }} />
               </div>
               <button
                 onClick={() => setMenuOpen(false)}
@@ -215,7 +215,7 @@ export function Navbar() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.55)' }}
                 >
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 32, height: 24, borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />
                   </div>
                   {label}

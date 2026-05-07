@@ -77,7 +77,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2 group ">
-            <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
+            <img src="/logo shopscribe.png" alt="ShopScribe" className="h-6 w-auto" />
           </Link>
         </div>
 

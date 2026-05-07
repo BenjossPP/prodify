@@ -16,7 +16,7 @@ export default function NotFound() {
       <div className="relative z-10 text-center max-w-lg">
         {/* Logo */}
         <Link href="/" className="inline-flex items-center gap-2 mb-12 ">
-          <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
+          <img src="/logo shopscribe.png" alt="ShopScribe" className="h-6 w-auto" />
         </Link>
 
         {/* 404 */}

@@ -159,7 +159,7 @@ export default function AccountClient({
       <header className="glass-nav sticky top-0 z-40 px-4 sm:px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 ">
-            <img src="/Logo SS.png" alt="ShopScribe" className="h-8 w-auto" />
+            <img src="/logo shopscribe.png" alt="ShopScribe" className="h-6 w-auto" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/dashboard">
