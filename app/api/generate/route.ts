@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateProductSheet, generateProductSheetVariants } from '@/lib/openai'
 
+// Types MIME autorisés pour l'analyse d'image
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+// Taille max de l'image base64 : 4MB (base64 ~= 4/3 de la taille réelle, donc ~3MB réels)
+const MAX_IMAGE_BASE64_LENGTH = 4 * 1024 * 1024
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -9,6 +14,16 @@ export async function POST(request: NextRequest) {
 
     if (!productName || !keywords) {
       return NextResponse.json({ error: 'Nom du produit et mots-clés requis' }, { status: 400 })
+    }
+
+    // Validation de l'image si fournie
+    if (imageBase64) {
+      if (typeof imageBase64 !== 'string' || imageBase64.length > MAX_IMAGE_BASE64_LENGTH) {
+        return NextResponse.json({ error: 'Image trop volumineuse (max 4MB)' }, { status: 400 })
+      }
+      if (!imageMimeType || !ALLOWED_MIME_TYPES.has(imageMimeType)) {
+        return NextResponse.json({ error: 'Format d\'image non supporté (JPEG, PNG, WebP, GIF uniquement)' }, { status: 400 })
+      }
     }
 
     const supabase = await createClient()
@@ -120,7 +135,12 @@ export async function POST(request: NextRequest) {
     // Increment guest counter
     if (!user) {
       const current = parseInt(request.cookies.get('guest_gen')?.value || '0')
-      response.cookies.set('guest_gen', String(current + 1), { maxAge: 60 * 60 * 24 * 30 })
+      response.cookies.set('guest_gen', String(current + 1), {
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      })
     }
 
     return response

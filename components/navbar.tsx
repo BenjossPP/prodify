@@ -23,12 +23,20 @@ export function Navbar() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session)
-      setIsAdmin(session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL)
+      if (session) {
+        fetch('/api/auth/is-admin').then(r => r.json()).then(d => setIsAdmin(!!d.isAdmin))
+      } else {
+        setIsAdmin(false)
+      }
       setSessionLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session)
-      setIsAdmin(session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL)
+      if (session) {
+        fetch('/api/auth/is-admin').then(r => r.json()).then(d => setIsAdmin(!!d.isAdmin))
+      } else {
+        setIsAdmin(false)
+      }
       setSessionLoading(false)
     })
     return () => subscription.unsubscribe()

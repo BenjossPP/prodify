@@ -36,8 +36,6 @@ export async function POST(request: NextRequest) {
       const plan = session.metadata?.plan as keyof typeof PLANS
       const sessionId = session.id as string
 
-      console.log('checkout.session.completed — uid:', uid, 'plan:', plan)
-
       if (uid && plan && PLANS[plan]) {
         // Idempotency check: skip if this session was already processed
         const { data: existing } = await supabase
@@ -47,7 +45,6 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (existing?.last_stripe_session_id === sessionId) {
-          console.log('Webhook already processed for session:', sessionId, '— skipping')
           break
         }
 
@@ -64,7 +61,6 @@ export async function POST(request: NextRequest) {
 
         if (error) console.error('Supabase update error:', error)
         else {
-          console.log('Plan mis à jour avec succès:', plan, 'pour', uid, '— quota:', generations)
 
           // Récupérer les infos de l'utilisateur pour l'email de confirmation
           const { data: profile } = await supabase
@@ -85,7 +81,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } else {
-        console.warn('uid ou plan manquant / invalide dans les metadata:', session.metadata)
+        console.error('uid ou plan manquant dans les metadata Stripe')
       }
       break
     }

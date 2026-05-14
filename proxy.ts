@@ -59,7 +59,7 @@ export async function proxy(request: NextRequest) {
 
   // Admin route: only allow users with the configured admin email
   if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || process.env.ADMIN_EMAIL
+    const adminEmail = process.env.ADMIN_EMAIL
     if (!adminEmail || user.email !== adminEmail) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'

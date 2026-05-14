@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
+import { stripe, PLANS } from '@/lib/stripe'
 import { VALID_PLANS } from '@/lib/plans'
+
+// Whitelist server-side des priceIds autorisés — jamais fournis par le client
+const ALLOWED_PRICE_IDS = new Set([
+  process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID,
+  process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID,
+  process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID,
+].filter(Boolean))
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,13 +19,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { priceId, plan } = await request.json()
+    const { plan } = await request.json()
 
     if (!plan || !VALID_PLANS.includes(plan) || plan === 'free') {
       return NextResponse.json({ error: 'Plan invalide' }, { status: 400 })
     }
-    if (!priceId || typeof priceId !== 'string') {
-      return NextResponse.json({ error: 'priceId invalide' }, { status: 400 })
+
+    // Résoudre le priceId côté serveur depuis le plan — jamais depuis le client
+    const priceId = PLANS[plan as keyof typeof PLANS]?.stripePriceId
+    if (!priceId || !ALLOWED_PRICE_IDS.has(priceId)) {
+      return NextResponse.json({ error: 'Plan non disponible' }, { status: 400 })
     }
 
     const { data: profile } = await supabase

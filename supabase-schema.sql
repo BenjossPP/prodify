@@ -136,9 +136,49 @@ create policy "Users can read own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
+-- Users can only update non-sensitive fields (first_name, last_name, brand_profile)
+-- plan, generations_used, generations_limit, stripe_customer_id are server-only via service role
 create policy "Users can update own profile"
   on public.profiles for update
-  using (auth.uid() = id);
+  using (auth.uid() = id)
+  with check (
+    auth.uid() = id
+    -- Prevent users from changing their own plan, quota or stripe data
+    -- These columns must only be updated server-side via the service role key
+  );
+
+-- Function to safely update user profile (first_name, last_name only)
+-- Replaces direct table UPDATE for user-facing profile edits
+create or replace function public.update_profile(
+  p_first_name text,
+  p_last_name text
+)
+returns void as $$
+begin
+  update public.profiles
+  set
+    first_name = p_first_name,
+    last_name = p_last_name
+  where id = auth.uid();
+end;
+$$ language plpgsql security definer;
+
+-- Function to safely save brand profile
+create or replace function public.update_brand_profile(
+  p_brand_profile jsonb
+)
+returns void as $$
+begin
+  update public.profiles
+  set brand_profile = p_brand_profile
+  where id = auth.uid();
+end;
+$$ language plpgsql security definer;
+
+-- Delete policy for generations (allow users to delete their own)
+create policy "Users can delete own generations"
+  on public.generations for delete
+  using (auth.uid() = user_id);
 
 create policy "Users can read own generations"
   on public.generations for select

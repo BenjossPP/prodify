@@ -3,6 +3,7 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx'
 import Papa from 'papaparse'
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { HISTORY_PAGE_SIZE } from '@/lib/constants'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -1129,7 +1130,7 @@ export default function DashboardClient({
   const [historyItems, setHistoryItems] = useState<Generation[]>(history)
   const [historyOffset, setHistoryOffset] = useState(history.length)
   const [historyLoading, setHistoryLoading] = useState(false)
-  const [historyHasMore, setHistoryHasMore] = useState(history.length === 20)
+  const [historyHasMore, setHistoryHasMore] = useState(history.length === HISTORY_PAGE_SIZE)
 
   // History search & filter
   const [historySearch, setHistorySearch] = useState('')
@@ -1148,13 +1149,13 @@ export default function DashboardClient({
   async function loadMoreHistory() {
     setHistoryLoading(true)
     try {
-      const res = await fetch(`/api/history?offset=${historyOffset}&limit=20`)
+      const res = await fetch(`/api/history?offset=${historyOffset}&limit=${HISTORY_PAGE_SIZE}`)
       if (res.ok) {
         const data = await res.json()
         const newItems: Generation[] = data.items || []
         setHistoryItems(prev => [...prev, ...newItems])
         setHistoryOffset(prev => prev + newItems.length)
-        setHistoryHasMore(newItems.length === 20)
+        setHistoryHasMore(newItems.length === HISTORY_PAGE_SIZE)
       }
     } catch {
       // silently fail

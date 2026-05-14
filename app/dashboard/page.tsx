@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DashboardClient from './dashboard-client'
+import { HISTORY_PAGE_SIZE } from '@/lib/constants'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -19,7 +20,7 @@ export default async function DashboardPage() {
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(20)
+    .limit(HISTORY_PAGE_SIZE)
 
   return (
     <DashboardClient

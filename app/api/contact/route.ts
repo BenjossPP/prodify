@@ -1,27 +1,7 @@
 import { NextResponse } from 'next/server'
 import { sendContactEmail } from '@/lib/email'
 
-// Simple in-memory rate limit: max 3 requests per IP per 10 minutes
-const rateLimitMap = new Map<string, { count: number; reset: number }>()
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || now > entry.reset) {
-    rateLimitMap.set(ip, { count: 1, reset: now + 10 * 60 * 1000 })
-    return false
-  }
-  if (entry.count >= 3) return true
-  entry.count++
-  return false
-}
-
 export async function POST(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') ?? 'unknown'
-  if (isRateLimited(ip)) {
-    return NextResponse.json({ error: 'Trop de messages envoyés. Réessayez dans 10 minutes.' }, { status: 429 })
-  }
-
   let body: unknown
   try {
     body = await req.json()

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { generateProductSheet } from '@/lib/openai'
+import { PLAN_GENERATIONS } from '@/lib/plans'
 
 // Admin client to bypass RLS for server-side job updates
 function getAdminClient() {
@@ -42,8 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (rpcError || allowed === false) {
       const plan = profile.plan || 'free'
-      const limits: Record<string, number> = { free: 3, starter: 25, pro: 100, business: 500 }
-      const limit = limits[plan] ?? 3
+      const limit = PLAN_GENERATIONS[plan] ?? 3
       const remaining = Math.max(0, limit - profile.generations_used)
       return NextResponse.json(
         { error: `Quota insuffisant. Vous avez ${remaining} générations restantes.` },
